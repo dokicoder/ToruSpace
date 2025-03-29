@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://b4s4mut7nbanw"]
+
+[ext_resource type="Texture2D" uid="uid://gwb807nfvypp" path="res://textures/TSTextureAtlas.png" id="1_uyk10"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_l6tgn"]
+atlas = ExtResource("1_uyk10")
+region = Rect2(0, 0, 128, 128)
+
+[node name="Field" type="Sprite2D"]
+texture = SubResource("AtlasTexture_l6tgn")

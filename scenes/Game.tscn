@@ -1,0 +1,39 @@
+[gd_scene load_steps=6 format=3 uid="uid://dsty0aw0o7r4g"]
+
+[ext_resource type="PackedScene" uid="uid://b4s4mut7nbanw" path="res://scenes/field.tscn" id="1_ukqus"]
+[ext_resource type="Texture2D" uid="uid://gwb807nfvypp" path="res://textures/TSTextureAtlas.png" id="2_qfiq3"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_l8vg1"]
+atlas = ExtResource("2_qfiq3")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_m50tj"]
+atlas = ExtResource("2_qfiq3")
+region = Rect2(256, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tnd7r"]
+atlas = ExtResource("2_qfiq3")
+region = Rect2(640, 0, 128, 128)
+
+[node name="Game" type="Node2D"]
+metadata/_edit_vertical_guides_ = [-2096.0]
+
+[node name="Board" type="Node2D" parent="."]
+
+[node name="Field" parent="Board" instance=ExtResource("1_ukqus")]
+position = Vector2(-64, -64)
+
+[node name="Field2" parent="Board" instance=ExtResource("1_ukqus")]
+position = Vector2(64, -64)
+texture = SubResource("AtlasTexture_l8vg1")
+
+[node name="Field3" parent="Board" instance=ExtResource("1_ukqus")]
+position = Vector2(-64, 64)
+texture = SubResource("AtlasTexture_m50tj")
+
+[node name="Field4" parent="Board" instance=ExtResource("1_ukqus")]
+position = Vector2(64, 64)
+texture = SubResource("AtlasTexture_tnd7r")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(0.3, 0.3)
