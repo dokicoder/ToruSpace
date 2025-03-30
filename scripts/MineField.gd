@@ -7,8 +7,9 @@ enum FieldState {
 }	
 
 enum MaskState {
-	CLEAR = 0,
-	BLIND = 1,
+
+	BLIND = 0,
+	CLEAR = 1,
 	MARKED_UNSURE = 2,
 	MARKED_MINE = 3,
 }
@@ -170,9 +171,9 @@ func getNeighborFieldIndizes(fieldIdx: int) -> Array[int]:
 	assert(x >= 0 && x < _width && y >= 0 && y < _height)
 
 	var leftX = (x - 1 + _width) % _width
-	var rightX = x + 1 % _width
+	var rightX = (x + 1) % _width
 	var topY = (y - 1 + _height) % _height
-	var bottomY = y + 1 % _height
+	var bottomY = (y + 1) % _height
 	
 	return [
 		xYtoIdx(leftX, topY), xYtoIdx(x, topY), xYtoIdx(rightX, topY),
@@ -215,35 +216,96 @@ func markObviousMine(fieldIdx: int) -> bool:
 	return true
 
 func freeForFirstMove(x: int, y: int):
-	# TODO: implement
-	pass
+	_isFirstMove = false
+	var fieldVal = getFieldAt(x, y)
+
+	if fieldVal == FieldState.EMPTY:
+		return
+		
+	var fieldIdx = xYtoIdx(x, y)
+	
+	# if field is a mine, just delete it and decrement neighbors
+	if fieldVal == FieldState.MINE_LIVE:
+		setFieldAt(x, y, FieldState.EMPTY)
+
+		for neighborIdx in getNeighborFieldIndizes(fieldIdx):
+			var neighborVal = getFieldAtIdx(neighborIdx)
+			# if neighbor is mine, increment center field (which now contains a number, not a mine)
+			if neighborVal == FieldState.MINE_LIVE: 
+				setFieldAt(x, y, FieldState.EMPTY)
+			# tell neighbor that mine has vanished
+			elif neighborVal != FieldState.EMPTY:
+				setFieldAtIdx(neighborIdx, neighborVal - 1)
+
+	# either it did before or it does now after update: field contains number
+	# act as if surrounding mines have been deleted
+	var numRemovedMines = 0
+
+	for neighborIdx in getNeighborFieldIndizes(fieldIdx):
+		var neighborVal = getFieldAtIdx(neighborIdx)
+		# tell all neighbors of any surrounding mine that mine has vanished
+		if neighborVal == FieldState.MINE_LIVE:
+			var newNeighborVal = 0
+			for neighborNeighborIdx in getNeighborFieldIndizes(neighborIdx):
+				var neighborNeighborVal = getFieldAtIdx(neighborNeighborIdx)
+				if neighborNeighborVal == FieldState.MINE_LIVE:
+					newNeighborVal += 1
+				elif neighborNeighborVal != FieldState.EMPTY:
+					setFieldAtIdx(neighborNeighborIdx, neighborNeighborVal - 1)
+			# now actually delete surrounding mines and replace them with their according field value
+			setFieldAtIdx(neighborIdx, newNeighborVal)
+			# remove 
+			_mineIdxList.remove_at(_mineIdxList.find(neighborIdx))
+			numRemovedMines += 1
+	# there were mines removed, we want to know of that
+	# actualNumberOfMines -= numRemovedMines
+	# add removed mines again somewhere else
+	# TODO: somewhere else could actually happen to be the same place --> fix that
+	deployRandomMines(numRemovedMines)
+
 
 func clearField(x: int, y: int) -> bool:
-		if _isFirstMove: 
-			freeForFirstMove(x, y)
-		
-		if getMaskAt(x, y) != MaskState.BLIND: 
-			return true
-
-		var fieldVal = getFieldAt(x, y)
-
-		_floodList.append(fieldVal)
-
-		floodStep()
-
-		# mark obvious mines
-		markClearedMines()
-
-		# full flood operation could be slow
-		# fullyFloodFrom(field)
-
-		# congrats, you are dead. or lost a life
-		if getFieldAt(x, y) == FieldState.MINE_LIVE: 
-			setFieldAt(x, y, FieldState.MINE_EXPLODED)
-			setMaskAt(x, y, MaskState.MARKED_MINE)
-			return false
+	#if _isFirstMove: 
+	#	freeForFirstMove(x, y)
 	
+	print("clear field ", x, " ", y)
+	
+	var fieldVal = getFieldAt(x, y)
+	var fieldMask = getMaskAt(x, y)
+	var fieldIdx = xYtoIdx(x, y)
+	
+	setMaskAtIdx(fieldIdx, MaskState.CLEAR)
+		
+	print(fieldVal, "- m ", fieldMask)
+	
+	return true
+	
+	if getMaskAt(x, y) != MaskState.BLIND: 
 		return true
+
+	
+	
+
+
+	#_floodList.append(fieldIdx)
+	
+	setMaskAtIdx(fieldIdx, MaskState.CLEAR)
+
+	#floodStep()
+
+	# mark obvious mines
+	markClearedMines()
+
+	# full flood operation could be slow
+	# fullyFloodFrom(field)
+
+	# congrats, you are dead. or lost a life
+	if fieldVal == FieldState.MINE_LIVE: 
+		setFieldAt(x, y, FieldState.MINE_EXPLODED)
+		setMaskAt(x, y, MaskState.MARKED_MINE)
+		return false
+
+	return true
 
 
 # mark all mines the player probably has identified
@@ -280,6 +342,7 @@ func floodStep():
 	var nextFloodList: PackedByteArray = []
 
 	for fieldIdx in _floodList:
+		setMaskAtIdx(fieldIdx, MaskState.CLEAR)
 		for neighborIdx in getNeighborFieldIndizes(fieldIdx):
 			if getMaskAtIdx(neighborIdx) == MaskState.BLIND:
 
