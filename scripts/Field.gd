@@ -12,7 +12,6 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	pass
 
-
 func _on_area_2d_input_event(viewport: Node, event: InputEvent, shape_idx: int) -> void:
 	if event is InputEventMouseButton:
 		match event.button_index:
@@ -20,3 +19,7 @@ func _on_area_2d_input_event(viewport: Node, event: InputEvent, shape_idx: int) 
 				if event.pressed:
 					print("%d / %d" % [_x, _y])
 					Brd.board.clearField(_x, _y)
+			MOUSE_BUTTON_RIGHT:
+				if event.pressed:
+					#print("%d / %d" % [_x, _y])
+					Brd.board.floodStep()

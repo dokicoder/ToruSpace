@@ -3,10 +3,6 @@ extends Node
 const FieldScene: PackedScene = preload("res://scenes/Field.tscn")
 
 func _fieldToTextureRegion(field: MineField.FieldState, mask: MineField.MaskState) -> Vector2:
-	
-	if mask == MineField.MaskState.CLEAR:
-		return Vector2(256, 128)
-	
 	if mask == MineField.MaskState.BLIND:
 		return Vector2(768, 128)
 	if field == MineField.FieldState.MINE_LIVE: 
@@ -37,15 +33,8 @@ func _generateSpriteBoard():
 func _ready() -> void:
 	_generateSpriteBoard()
 
-
-		
-
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
 	#print("%s" % (get_children().size()))
 	for field in get_children():
 		field.texture.region.position = _fieldToTextureRegion(Brd.board.getFieldAt(field._x, field._y), Brd.board.getMaskAt(field._x, field._y))
-		if field._x == 0 && field._y == 0:
-			#if(board.getMaskAt(field._x, field._y) != 0):
-				pass
-				#print( board.getFieldAt(field._x, field._y), "....", board.getMaskAt(field._x, field._y) )

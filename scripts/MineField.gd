@@ -274,24 +274,15 @@ func clearField(x: int, y: int) -> bool:
 	var fieldMask = getMaskAt(x, y)
 	var fieldIdx = xYtoIdx(x, y)
 	
-	setMaskAtIdx(fieldIdx, MaskState.CLEAR)
-		
 	print(fieldVal, "- m ", fieldMask)
-	
-	return true
 	
 	if getMaskAt(x, y) != MaskState.BLIND: 
 		return true
-
-	
-	
-
-
-	#_floodList.append(fieldIdx)
+	_floodList.append(fieldIdx)
 	
 	setMaskAtIdx(fieldIdx, MaskState.CLEAR)
 
-	#floodStep()
+	floodStep()
 
 	# mark obvious mines
 	markClearedMines()
