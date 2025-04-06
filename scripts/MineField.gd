@@ -27,9 +27,9 @@ var _height: int = -1
 # TODO: may be more efficient as some packed array
 var _field: PackedByteArray = []
 var _mask: PackedByteArray = []
-var _mineIdxList: PackedByteArray = []
-var _floodList: PackedByteArray = []
-var _closedList: PackedByteArray = []
+var _mineIdxList: PackedInt32Array = []
+var _floodList: PackedInt32Array = []
+var _closedList: PackedInt32Array = []
 
 var _isFirstMove = true
 var _numLiveMines = 0
@@ -277,16 +277,17 @@ func clearField(x: int, y: int) -> bool:
 	#if _isFirstMove: 
 	#freeForFirstMove(x, y)
 	
-	print("clear field ", x, " ", y)
+	print_debug("clear field ", x, " ", y)
 	
 	var fieldVal = getFieldAt(x, y)
 	var fieldMask = getMaskAt(x, y)
 	var fieldIdx = xYtoIdx(x, y)
-	
-	print(fieldVal, "- m ", fieldMask)
+
+	print(">>>",fieldIdx)
 	
 	if getMaskAt(x, y) != MaskState.BLIND: 
 		return true
+
 	_floodList.append(fieldIdx)
 	
 	setMaskAtIdx(fieldIdx, MaskState.CLEAR)
@@ -321,7 +322,7 @@ func markClearedMines():
 	# filter the elements marked for deletion
 	_mineIdxList = Array(_mineIdxList).filter(func (e): e != -1)
 
-func makeMove(x: int, y: int, type: MoveType):
+func make_move(x: int, y: int, type: MoveType):
 	assert(x >= 0 && x < _width && y >= 0 && y < _height)
 	print("Make move  -> ", MoveType.keys()[type], " at ", x, ", ", y)
 
@@ -337,9 +338,11 @@ func makeMove(x: int, y: int, type: MoveType):
 		print("Invalid move type")
 
 func floodStep():
-	print("FloodStep - current floodList size: %d" % _floodList.size())
+	# print("FloodStep - current floodList size: %d" % _floodList.size())
 
-	var nextFloodList: PackedByteArray = []
+	var nextFloodList: PackedInt32Array = []
+
+	print("flood count: ", _floodList.size())
 
 	for fieldIdx in _floodList:
 		if getFieldAtIdx(fieldIdx) != FieldState.EMPTY:
@@ -350,11 +353,15 @@ func floodStep():
 			if getMaskAtIdx(neighborIdx) == MaskState.BLIND:
 
 				# if neighbor is already in closed or current list, skip it
-				if _floodList.find(neighborIdx) != -1: continue
-				if _closedList.find(neighborIdx) != -1: continue
+				#if _floodList.find(neighborIdx) != -1: continue
+				#if _closedList.find(neighborIdx) != -1: continue
 
+				if (_closedList.find(neighborIdx) == -1 and 
+					nextFloodList.find(neighborIdx) == -1 and
+					_floodList.find(neighborIdx) == -1): 
+					nextFloodList.append(neighborIdx)
 				# these neighbors need to be considered next iteration
-				nextFloodList.append(neighborIdx)
+				
 	
 	# replace closedList with current floodList, update floodList to nextFloodList
 	_closedList = _floodList
