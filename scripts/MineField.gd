@@ -34,8 +34,6 @@ var _closedList: PackedByteArray = []
 var _isFirstMove = true
 var _numLiveMines = 0
 
-
-
 var _rng: RandomNumberGenerator
 
 @export var width: int:
@@ -109,6 +107,14 @@ func setMaskAt(x: int, y: int, state: MaskState):
 func setMaskAtIdx(idx: int, state: MaskState):
 	assert(idx >= 0 && idx < _width * _height)
 	_mask[idx] = state
+	
+func incrementFieldAt(x: int, y: int):
+	incrementFieldAtIdx(y * _width + x)
+
+func incrementFieldAtIdx(idx: int):
+	var val = getFieldAtIdx(idx)
+	if val < 9:
+		setFieldAtIdx(idx, val+1)
 
 func dropMine(x:int, y:int) -> bool:
 	var fieldVal = getFieldAt(x, y)
@@ -124,6 +130,9 @@ func dropMineAtIdx(idx: int) -> bool:
 		return false
 
 	setFieldAtIdx(idx, FieldState.MINE_LIVE)
+	for neighborIdx in getNeighborFieldIndizes(idx):
+		incrementFieldAtIdx(neighborIdx)
+		
 	_numLiveMines += 1
 	return true
 
@@ -147,9 +156,9 @@ func getNeighborFieldPositions(x: int, y: int) -> Array[int]:
 	assert(x >= 0 && x < _width && y >= 0 && y < _height)
 
 	var leftX = (x - 1 + _width) % _width
-	var rightX = x + 1 % _width
+	var rightX = (x + 1) % _width
 	var topY = (y - 1 + _height) % _height
-	var bottomY = y + 1 % _height
+	var bottomY = (y + 1) % _height
 
 	return [
 		leftX, topY, x, topY, rightX, topY,
@@ -266,7 +275,7 @@ func freeForFirstMove(x: int, y: int):
 
 func clearField(x: int, y: int) -> bool:
 	#if _isFirstMove: 
-	#	freeForFirstMove(x, y)
+	#freeForFirstMove(x, y)
 	
 	print("clear field ", x, " ", y)
 	
@@ -282,7 +291,7 @@ func clearField(x: int, y: int) -> bool:
 	
 	setMaskAtIdx(fieldIdx, MaskState.CLEAR)
 
-	floodStep()
+	#floodStep()
 
 	# mark obvious mines
 	markClearedMines()
@@ -333,6 +342,9 @@ func floodStep():
 	var nextFloodList: PackedByteArray = []
 
 	for fieldIdx in _floodList:
+		if getFieldAtIdx(fieldIdx) != FieldState.EMPTY:
+			continue
+
 		setMaskAtIdx(fieldIdx, MaskState.CLEAR)
 		for neighborIdx in getNeighborFieldIndizes(fieldIdx):
 			if getMaskAtIdx(neighborIdx) == MaskState.BLIND:
