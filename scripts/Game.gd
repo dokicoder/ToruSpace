@@ -42,24 +42,39 @@ func _generateSpriteBoard():
 
 		add_child(field)
 
-		# if x == 0 || x == Brd.width - 1 || y == 0 || y == Brd.height - 1:
-		# 	var borderClone = field.duplicate()
-		# 	borderClone.texture = borderClone.texture.duplicate()
-		# 	borderClone.self_modulate = Color(0.9, 1.0, 0.9, 0.7)
+		if x == 0 || x == Brd.width - 1:
+			var borderClone = field.duplicate() as Field
+			borderClone.texture = borderClone.texture.duplicate()
+			borderClone.self_modulate = Color(0.7, 1.0, 0.7, 0.7)
 
-		# 	borderClone.position.x = (x - 0.5 * Brd.width) * 128 + 64
-		# 	borderClone.position.y = (y - 0.5 * Brd.height) * 128 + 64
+			borderClone.position.y = (y - 0.5 * Brd.height) * 128 + 64
 
-		# 	if x == 0:
-		# 		borderClone.position.x = (0.5 * Brd.width) * 128 + 64
-		# 	if x == Brd.width - 1:
-		# 		borderClone.position.x = (-0.5 * Brd.width) * 128 + 64
-		# 	if y == 0:
-		# 		borderClone.position.y = (0.5 * Brd.height) * 128 + 64
-		# 	if y == Brd.height - 1:
-		# 		borderClone.position.y = (-0.5 * Brd.height) * 128 + 64
+			if x == 0:
+				borderClone.position.x = (0.5 * Brd.width) * 128 + 64
+			if x == Brd.width - 1:
+				borderClone.position.x = (-0.5 * Brd.width - 1) * 128 + 64
+			
+			borderClone._x = x
+			borderClone._y = y
 
-		# 	add_child(borderClone)
+			add_child(borderClone)
+
+		if y == 0 || y == Brd.height - 1:
+			var borderClone = field.duplicate() as Field
+			borderClone.texture = borderClone.texture.duplicate()
+			borderClone.self_modulate = Color(0.7, 1.0, 0.7, 0.7)
+
+			field.position.x = (x - 0.5 * Brd.width) * 128 + 64
+
+			if y == 0:
+				borderClone.position.y = (0.5 * Brd.height) * 128 + 64
+			if y == Brd.height - 1:
+				borderClone.position.y = (-0.5 * Brd.height - 1) * 128 + 64
+			
+			borderClone._x = x
+			borderClone._y = y
+
+			add_child(borderClone)
 
 func _ready() -> void:
 	_generateSpriteBoard()

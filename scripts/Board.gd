@@ -1,7 +1,7 @@
 class_name Board extends Node
 
-const width: int = 20
-const height: int = 20
+const width: int = 5
+const height: int = 5
 
 var board: MineField
 
@@ -25,7 +25,10 @@ func _ready() -> void:
 	board = MineField.new()
 
 	board.init(width, height)
-	board.deployRandomMines(20)
+
+	var numMines = int(width * height * 0.07)
+
+	board.deployRandomMines(numMines)
 
 	#_debug_setAllFieldMaskType()
 
