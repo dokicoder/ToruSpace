@@ -10,7 +10,7 @@ metadata/_edit_vertical_guides_ = [-2096.0]
 script = ExtResource("1_1ycqr")
 
 [node name="Camera2D" type="Camera2D" parent="."]
-zoom = Vector2(0.3, 0.3)
+zoom = Vector2(0.15, 0.15)
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 z_index = 100

@@ -2,7 +2,7 @@ extends Node
 
 const FieldScene: PackedScene = preload("res://scenes/Field.tscn")
 
-func _fieldToTextureRegion(field: MineField.FieldState, mask: MineField.MaskState) -> Vector2:
+func _field_to_texture_region(field: MineField.FieldState, mask: MineField.MaskState) -> Vector2:
 	if mask == MineField.MaskState.BLIND:
 		return Vector2(6 * 128, 128)
 	if mask == MineField.MaskState.MARKED_MINE:
@@ -23,11 +23,11 @@ func _fieldToTextureRegion(field: MineField.FieldState, mask: MineField.MaskStat
 	
 	return Vector2(field * 128, 0)
 
-func _generateSpriteBoard():
+func _generate_sprite_board():
 	print("generate")
 	
 	for idx in range(0, Brd.width * Brd.height):
-		var coords = Brd.board.idxToXY(idx)
+		var coords = Brd.board.idx_to_xy(idx)
 		var x = coords[0]
 		var y = coords[1]
 		
@@ -38,7 +38,7 @@ func _generateSpriteBoard():
 		field.position.y = (y - 0.5 * Brd.height) * 128 + 64
 		
 		field.texture = field.texture.duplicate()
-		field.texture.region.position = _fieldToTextureRegion(Brd.board.getFieldAtIdx(idx), Brd.board.getMaskAtIdx(idx)) #Vector2((2 + idx % 3) * 128, 0)
+		field.texture.region.position = _field_to_texture_region(Brd.board.get_field_at_idx(idx), Brd.board.get_mask_at_idx(idx)) #Vector2((2 + idx % 3) * 128, 0)
 
 		add_child(field)
 
@@ -77,10 +77,10 @@ func _generateSpriteBoard():
 			add_child(borderClone)
 
 func _ready() -> void:
-	_generateSpriteBoard()
+	_generate_sprite_board()
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
 	#print("%s" % (get_children().size()))
 	for field in get_children():
-		field.texture.region.position = _fieldToTextureRegion(Brd.board.getFieldAt(field._x, field._y), Brd.board.getMaskAt(field._x, field._y))
+		field.texture.region.position = _field_to_texture_region(Brd.board.get_field_at(field._x, field._y), Brd.board.get_mask_at(field._x, field._y))

@@ -27,12 +27,12 @@ var _height: int = -1
 # TODO: may be more efficient as some packed array
 var _field: PackedByteArray = []
 var _mask: PackedByteArray = []
-var _mineIdxList: PackedInt32Array = []
-var _floodList: PackedInt32Array = []
-var _closedList: PackedInt32Array = []
+var _mine_idx_list: PackedInt32Array = []
+var _flood_list: PackedInt32Array = []
+var _closed_list: PackedInt32Array = []
 
-var _isFirstMove = true
-var _numLiveMines = 0
+var _is_first_move = true
+var _num_live_mines = 0
 
 var _rng: RandomNumberGenerator
 
@@ -55,12 +55,12 @@ func reset():
 	#_mask.resize((_width * _height))
 	_field.clear()
 	_mask.clear()
-	_mineIdxList.clear()
-	_floodList.clear()
-	_closedList.clear()
+	_mine_idx_list.clear()
+	_flood_list.clear()
+	_closed_list.clear()
 
-	_isFirstMove = true
-	_numLiveMines = 0
+	_is_first_move = true
+	_num_live_mines = 0
 
 	_rng = RandomNumberGenerator.new()
 
@@ -68,80 +68,80 @@ func reset():
 		_field.append(FieldState.EMPTY)
 		_mask.append(MaskState.BLIND)
 
-func xYtoIdx(x: int, y: int) -> int:
+func xy_to_idx(x: int, y: int) -> int:
 	assert(x >= 0 && x < _width && y >= 0 && y < _height)
 	return y * _width + x
 
-func idxToXY(idx: int) -> Array[int]:
+func idx_to_xy(idx: int) -> Array[int]:
 	assert(idx >= 0 && idx < _width * _height)
 	return [idx % _width, idx / _width]
 
-func getFieldAt(x: int, y: int) -> FieldState:
+func get_field_at(x: int, y: int) -> FieldState:
 	assert(x >= 0 && x < _width && y >= 0 && y < _height)
 	return _field[y * _width + x]
 
-func getFieldAtIdx(idx: int) -> FieldState:
+func get_field_at_idx(idx: int) -> FieldState:
 	assert(idx >= 0 && idx < _width * _height)
 	return _field[idx]
 
-func getMaskAt(x: int, y: int) -> MaskState:
+func get_mask_at(x: int, y: int) -> MaskState:
 	assert(x >= 0 && x < _width && y >= 0 && y < _height)
 	return _mask[y * _width + x]
 
-func getMaskAtIdx(idx: int) -> MaskState:
+func get_mask_at_idx(idx: int) -> MaskState:
 	assert(idx >= 0 && idx < _width * _height)
 	return _mask[idx]
 
-func setFieldAt(x: int, y: int, state: FieldState):
+func set_field_at(x: int, y: int, state: FieldState):
 	assert(x >= 0 && x < _width && y >= 0 && y < _height)
-	setFieldAtIdx(y * _width + x, state)
+	set_field_at_idx(y * _width + x, state)
 
-func setFieldAtIdx(idx: int, state: FieldState):
+func set_field_at_idx(idx: int, state: FieldState):
 	assert(idx >= 0 && idx < _width * _height)
 	_field[idx] = state
 
-func setMaskAt(x: int, y: int, state: MaskState):
+func set_mask_at(x: int, y: int, state: MaskState):
 	assert(x >= 0 && x < _width && y >= 0 && y < _height)
-	setMaskAtIdx(y * _width + x, state)
+	set_mask_at_idx(y * _width + x, state)
 
-func setMaskAtIdx(idx: int, state: MaskState):
+func set_mask_at_idx(idx: int, state: MaskState):
 	assert(idx >= 0 && idx < _width * _height)
 	_mask[idx] = state
 	
-func incrementFieldAt(x: int, y: int):
-	incrementFieldAtIdx(y * _width + x)
+func increment_field_at(x: int, y: int):
+	increment_field_at_idx(y * _width + x)
 
-func incrementFieldAtIdx(idx: int):
-	var val = getFieldAtIdx(idx)
+func increment_field_at_idx(idx: int):
+	var val = get_field_at_idx(idx)
 	if val < 9:
-		setFieldAtIdx(idx, val+1)
+		set_field_at_idx(idx, val+1)
 
-func dropMine(x:int, y:int) -> bool:
-	var fieldVal = getFieldAt(x, y)
-	if fieldVal == FieldState.MINE_LIVE || fieldVal == FieldState.MINE_EXPLODED:
+func ddrop_mine_at(x:int, y:int) -> bool:
+	var field_val = get_field_at(x, y)
+	if field_val == FieldState.MINE_LIVE || field_val == FieldState.MINE_EXPLODED:
 		return false
 
-	setFieldAt(x, y, FieldState.MINE_LIVE)
-	_numLiveMines += 1
+	set_field_at(x, y, FieldState.MINE_LIVE)
+	_num_live_mines += 1
 	return true
 
-func dropMineAtIdx(idx: int) -> bool:
+func drop_mine_at_idx(idx: int) -> bool:
 	if _field[idx] == FieldState.MINE_LIVE || _field[idx] == FieldState.MINE_EXPLODED:
 		return false
 
-	setFieldAtIdx(idx, FieldState.MINE_LIVE)
-	for neighborIdx in getNeighborFieldIndizes(idx):
-		incrementFieldAtIdx(neighborIdx)
+	set_field_at_idx(idx, FieldState.MINE_LIVE)
+	for neighbor_idx in get_neighbor_field_indizes(idx):
+		increment_field_at_idx(neighbor_idx)
 		
-	_numLiveMines += 1
+	_num_live_mines += 1
 	return true
 
-func deployRandomMines(numMines: int):
+func deploy_random_mines(numMines: int):
 	var deployedMines = 0
 
 	while(deployedMines < numMines):
 		var idx = _rng.randi_range(0, (_width * _height) - 1) 
-		if dropMineAtIdx(idx): deployedMines += 1
+		if drop_mine_at_idx(idx): deployedMines += 1
 
 	print("Deployed ", deployedMines, " mines")
 	
@@ -152,7 +152,7 @@ func deployRandomMines(numMines: int):
 # 	---+---+---
 # 	 5 | 6 | 7
 # returns indizes linearly, so result is array with 14 elements
-func getNeighborFieldPositions(x: int, y: int) -> Array[int]:
+func get_neighbor_field_positions(x: int, y: int) -> Array[int]:
 	assert(x >= 0 && x < _width && y >= 0 && y < _height)
 
 	var leftX = (x - 1 + _width) % _width
@@ -172,8 +172,8 @@ func getNeighborFieldPositions(x: int, y: int) -> Array[int]:
 # 	 3 | F | 4
 # 	---+---+---
 # 	 5 | 6 | 7
-func getNeighborFieldIndizes(fieldIdx: int) -> Array[int]:
-	var indizes = idxToXY(fieldIdx)
+func get_neighbor_field_indizes(field_idx: int) -> Array[int]:
+	var indizes = idx_to_xy(field_idx)
 	var x = indizes[0]
 	var y = indizes[1]
 
@@ -185,125 +185,125 @@ func getNeighborFieldIndizes(fieldIdx: int) -> Array[int]:
 	var bottomY = (y + 1) % _height
 	
 	return [
-		xYtoIdx(leftX, topY), xYtoIdx(x, topY), xYtoIdx(rightX, topY),
-		xYtoIdx(leftX, y), xYtoIdx(rightX, y),
-		xYtoIdx(leftX, bottomY), xYtoIdx(x, bottomY), xYtoIdx(rightX, bottomY)
+		xy_to_idx(leftX, topY), xy_to_idx(x, topY), xy_to_idx(rightX, topY),
+		xy_to_idx(leftX, y), xy_to_idx(rightX, y),
+		xy_to_idx(leftX, bottomY), xy_to_idx(x, bottomY), xy_to_idx(rightX, bottomY)
 	]
 
-func _momHelper(fieldIdx: int) -> bool:
-	var fieldVal = getFieldAtIdx(fieldIdx)
+func _mom_helper(field_idx: int) -> bool:
+	var field_val = get_field_at_idx(field_idx)
 
-	if(fieldVal == FieldState.MINE_LIVE): 
+	if(field_val == FieldState.MINE_LIVE): 
 		return true
 
 	var numAdjacentBlinds: int = 0
-	for neighborIdx in getNeighborFieldIndizes(fieldIdx):
-		var neighborMask = _mask[neighborIdx]
+	for neighbor_idx in get_neighbor_field_indizes(field_idx):
+		var neighborMask = _mask[neighbor_idx]
 		# count the mine candidates around number
 		# todo: ever heard of map/reduce ?
 		if neighborMask != MaskState.CLEAR: 
 			numAdjacentBlinds += 1
 		
 	# if number of blinds equals mine count it can be considered obvious how many mines there are
-	return numAdjacentBlinds == fieldVal
+	return numAdjacentBlinds == field_val
 
-func markObviousMine(fieldIdx: int) -> bool:
-	var fieldVal = getFieldAtIdx(fieldIdx)
+func mark_obvious_mine(field_idx: int) -> bool:
+	var field_val = get_field_at_idx(field_idx)
 
-	if fieldVal != FieldState:
+	if field_val != FieldState:
 		return false
 
-	for neighborIdx in getNeighborFieldIndizes(fieldIdx):
-		var neighborMask = _mask[neighborIdx]
-		var neighborVal = _field[neighborIdx]
-		if neighborMask == MaskState.BLIND && neighborVal != FieldState.MINE_LIVE:
+	for neighbor_idx in get_neighbor_field_indizes(field_idx):
+		var neighborMask = _mask[neighbor_idx]
+		var neighbor_val = _field[neighbor_idx]
+		if neighborMask == MaskState.BLIND && neighbor_val != FieldState.MINE_LIVE:
 			return false
-		if neighborMask == MaskState.CLEAR && !_momHelper(neighborIdx):
+		if neighborMask == MaskState.CLEAR && !_mom_helper(neighbor_idx):
 			return false
 
 	# TODO: make optional and expose to options menu
 	return true
 
-func freeForFirstMove(x: int, y: int):
-	_isFirstMove = false
-	var fieldVal = getFieldAt(x, y)
+func free_for_first_move(x: int, y: int):
+	_is_first_move = false
+	var field_val = get_field_at(x, y)
 
-	if fieldVal == FieldState.EMPTY:
+	if field_val == FieldState.EMPTY:
 		return
 		
-	var fieldIdx = xYtoIdx(x, y)
+	var field_idx = xy_to_idx(x, y)
 	
 	# if field is a mine, just delete it and decrement neighbors
-	if fieldVal == FieldState.MINE_LIVE:
-		setFieldAt(x, y, FieldState.EMPTY)
+	if field_val == FieldState.MINE_LIVE:
+		set_field_at(x, y, FieldState.EMPTY)
 
-		for neighborIdx in getNeighborFieldIndizes(fieldIdx):
-			var neighborVal = getFieldAtIdx(neighborIdx)
+		for neighbor_idx in get_neighbor_field_indizes(field_idx):
+			var neighbor_val = get_field_at_idx(neighbor_idx)
 			# if neighbor is mine, increment center field (which now contains a number, not a mine)
-			if neighborVal == FieldState.MINE_LIVE: 
-				setFieldAt(x, y, FieldState.EMPTY)
+			if neighbor_val == FieldState.MINE_LIVE: 
+				set_field_at(x, y, FieldState.EMPTY)
 			# tell neighbor that mine has vanished
-			elif neighborVal != FieldState.EMPTY:
-				setFieldAtIdx(neighborIdx, neighborVal - 1)
+			elif neighbor_val != FieldState.EMPTY:
+				set_field_at_idx(neighbor_idx, neighbor_val - 1)
 
 	# either it did before or it does now after update: field contains number
 	# act as if surrounding mines have been deleted
-	var numRemovedMines = 0
+	var num_removed_mines = 0
 
-	for neighborIdx in getNeighborFieldIndizes(fieldIdx):
-		var neighborVal = getFieldAtIdx(neighborIdx)
+	for neighbor_idx in get_neighbor_field_indizes(field_idx):
+		var neighbor_val = get_field_at_idx(neighbor_idx)
 		# tell all neighbors of any surrounding mine that mine has vanished
-		if neighborVal == FieldState.MINE_LIVE:
-			var newNeighborVal = 0
-			for neighborNeighborIdx in getNeighborFieldIndizes(neighborIdx):
-				var neighborNeighborVal = getFieldAtIdx(neighborNeighborIdx)
-				if neighborNeighborVal == FieldState.MINE_LIVE:
-					newNeighborVal += 1
-				elif neighborNeighborVal != FieldState.EMPTY:
-					setFieldAtIdx(neighborNeighborIdx, neighborNeighborVal - 1)
+		if neighbor_val == FieldState.MINE_LIVE:
+			var new_neighbor_val = 0
+			for neighbor_neighbor_idx in get_neighbor_field_indizes(neighbor_idx):
+				var neighbor_neighbor_val = get_field_at_idx(neighbor_neighbor_idx)
+				if neighbor_neighbor_val == FieldState.MINE_LIVE:
+					new_neighbor_val += 1
+				elif neighbor_neighbor_val != FieldState.EMPTY:
+					set_field_at_idx(neighbor_neighbor_idx, neighbor_neighbor_val - 1)
 			# now actually delete surrounding mines and replace them with their according field value
-			setFieldAtIdx(neighborIdx, newNeighborVal)
+			set_field_at_idx(neighbor_idx, new_neighbor_val)
 			# remove 
-			_mineIdxList.remove_at(_mineIdxList.find(neighborIdx))
-			numRemovedMines += 1
+			_mine_idx_list.remove_at(_mine_idx_list.find(neighbor_idx))
+			num_removed_mines += 1
 	# there were mines removed, we want to know of that
-	# actualNumberOfMines -= numRemovedMines
+	# actualNumberOfMines -= num_removed_mines
 	# add removed mines again somewhere else
 	# TODO: somewhere else could actually happen to be the same place --> fix that
-	deployRandomMines(numRemovedMines)
+	deploy_random_mines(num_removed_mines)
 
 
-func clearField(x: int, y: int) -> bool:
-	#if _isFirstMove: 
-	#freeForFirstMove(x, y)
+func clear_field(x: int, y: int) -> bool:
+	#if _is_first_move: 
+	#free_for_first_move(x, y)
 	
 	print_debug("clear field ", x, " ", y)
 	
-	var fieldVal = getFieldAt(x, y)
-	var fieldMask = getMaskAt(x, y)
-	var fieldIdx = xYtoIdx(x, y)
+	var field_val = get_field_at(x, y)
+	var field_mask = get_mask_at(x, y)
+	var field_idx = xy_to_idx(x, y)
 
-	print(">>>",fieldIdx)
+	print(">>>",field_idx)
 	
-	if getMaskAt(x, y) != MaskState.BLIND: 
+	if get_mask_at(x, y) != MaskState.BLIND: 
 		return true
 
-	_floodList.append(fieldIdx)
+	_flood_list.append(field_idx)
 	
-	setMaskAtIdx(fieldIdx, MaskState.CLEAR)
+	set_mask_at_idx(field_idx, MaskState.CLEAR)
 
-	#floodStep()
+	#flood_step()
 
 	# mark obvious mines
-	markClearedMines()
+	mark_cleared_mines()
 
 	# full flood operation could be slow
 	# fullyFloodFrom(field)
 
 	# congrats, you are dead. or lost a life
-	if fieldVal == FieldState.MINE_LIVE: 
-		setFieldAt(x, y, FieldState.MINE_EXPLODED)
-		setMaskAt(x, y, MaskState.MARKED_MINE)
+	if field_val == FieldState.MINE_LIVE: 
+		set_field_at(x, y, FieldState.MINE_EXPLODED)
+		set_mask_at(x, y, MaskState.MARKED_MINE)
 		return false
 
 	return true
@@ -311,58 +311,58 @@ func clearField(x: int, y: int) -> bool:
 
 # mark all mines the player probably has identified
 # TODO: maybe finer-tune implementation
-func markClearedMines():
-	for index in _mineIdxList:
-		if markObviousMine(index):
+func mark_cleared_mines():
+	for index in _mine_idx_list:
+		if mark_obvious_mine(index):
 			# mark for deletion
-			_mineIdxList[index] = -1
+			_mine_idx_list[index] = -1
 			# _numberOfMarkedMines += 1
 			print("marked cleared mine")
 
 	# filter the elements marked for deletion
-	_mineIdxList = Array(_mineIdxList).filter(func (e): e != -1)
+	_mine_idx_list = Array(_mine_idx_list).filter(func (e): e != -1)
 
 func make_move(x: int, y: int, type: MoveType):
 	assert(x >= 0 && x < _width && y >= 0 && y < _height)
 	print("Make move  -> ", MoveType.keys()[type], " at ", x, ", ", y)
 
 	if type == MoveType.MARK_MINE:
-		setMaskAt(x, y, MaskState.MARKED_MINE)
+		set_mask_at(x, y, MaskState.MARKED_MINE)
 	elif type == MoveType.MARK_UNSURE:
-		setMaskAt(x, y, MaskState.MARKED_UNSURE)
+		set_mask_at(x, y, MaskState.MARKED_UNSURE)
 	elif type == MoveType.CLEAR_MARK:
-		setMaskAt(x, y, MaskState.CLEAR)
+		set_mask_at(x, y, MaskState.CLEAR)
 	elif type == MoveType.CLEAR_FIELD:
-		clearField(x, y)
+		clear_field(x, y)
 	else:
 		print("Invalid move type")
 
-func floodStep():
-	# print("FloodStep - current floodList size: %d" % _floodList.size())
+func flood_step():
+	# print("FloodStep - current floodList size: %d" % _flood_list.size())
 
-	var nextFloodList: PackedInt32Array = []
+	var next_flood_list: PackedInt32Array = []
 
-	print("flood count: ", _floodList.size())
+	print("flood count: ", _flood_list.size())
 
-	for fieldIdx in _floodList:
-		if getFieldAtIdx(fieldIdx) != FieldState.EMPTY:
+	for field_idx in _flood_list:
+		if get_field_at_idx(field_idx) != FieldState.EMPTY:
 			continue
 
-		setMaskAtIdx(fieldIdx, MaskState.CLEAR)
-		for neighborIdx in getNeighborFieldIndizes(fieldIdx):
-			if getMaskAtIdx(neighborIdx) == MaskState.BLIND:
+		set_mask_at_idx(field_idx, MaskState.CLEAR)
+		for neighbor_idx in get_neighbor_field_indizes(field_idx):
+			if get_mask_at_idx(neighbor_idx) == MaskState.BLIND:
 
 				# if neighbor is already in closed or current list, skip it
-				#if _floodList.find(neighborIdx) != -1: continue
-				#if _closedList.find(neighborIdx) != -1: continue
+				#if _flood_list.find(neighbor_idx) != -1: continue
+				#if _closed_list.find(neighbor_idx) != -1: continue
 
-				if (_closedList.find(neighborIdx) == -1 and 
-					nextFloodList.find(neighborIdx) == -1 and
-					_floodList.find(neighborIdx) == -1): 
-					nextFloodList.append(neighborIdx)
+				if (_closed_list.find(neighbor_idx) == -1 and 
+					next_flood_list.find(neighbor_idx) == -1 and
+					_flood_list.find(neighbor_idx) == -1): 
+					next_flood_list.append(neighbor_idx)
 				# these neighbors need to be considered next iteration
 				
 	
-	# replace closedList with current floodList, update floodList to nextFloodList
-	_closedList = _floodList
-	_floodList = nextFloodList
+	# replace closedList with current floodList, update floodList to next_flood_list
+	_closed_list = _flood_list
+	_flood_list = next_flood_list
