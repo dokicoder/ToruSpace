@@ -18,7 +18,7 @@ enum MoveType {
 	CLEAR_FIELD,
 	MARK_UNSURE,
 	MARK_MINE,
-	CLEAR_MARK,
+	RESET_MASK,
 }
 
 var _width: int = -1
@@ -116,20 +116,15 @@ func increment_field_at_idx(idx: int):
 	if val < 9:
 		set_field_at_idx(idx, val+1)
 
-func ddrop_mine_at(x:int, y:int) -> bool:
-	var field_val = get_field_at(x, y)
-	if field_val == FieldState.MINE_LIVE || field_val == FieldState.MINE_EXPLODED:
-		return false
-
-	set_field_at(x, y, FieldState.MINE_LIVE)
-	_num_live_mines += 1
-	return true
+func drop_mine_at(x:int, y:int) -> bool:
+	return drop_mine_at_idx( xy_to_idx(x, y) )
 
 func drop_mine_at_idx(idx: int) -> bool:
 	if _field[idx] == FieldState.MINE_LIVE || _field[idx] == FieldState.MINE_EXPLODED:
 		return false
 
 	set_field_at_idx(idx, FieldState.MINE_LIVE)
+	_mine_idx_list.append(idx)
 	for neighbor_idx in get_neighbor_field_indizes(idx):
 		increment_field_at_idx(neighbor_idx)
 		
@@ -210,7 +205,7 @@ func _mom_helper(field_idx: int) -> bool:
 func mark_obvious_mine(field_idx: int) -> bool:
 	var field_val = get_field_at_idx(field_idx)
 
-	if field_val != FieldState:
+	if field_val != FieldState.MINE_LIVE:
 		return false
 
 	for neighbor_idx in get_neighbor_field_indizes(field_idx):
@@ -272,18 +267,15 @@ func free_for_first_move(x: int, y: int):
 	# TODO: somewhere else could actually happen to be the same place --> fix that
 	deploy_random_mines(num_removed_mines)
 
-
 func clear_field(x: int, y: int) -> bool:
 	#if _is_first_move: 
 	#free_for_first_move(x, y)
 	
-	print_debug("clear field ", x, " ", y)
+	print_debug("clear field (%", x, " ", y)
 	
 	var field_val = get_field_at(x, y)
-	var field_mask = get_mask_at(x, y)
+	#var field_mask = get_mask_at(x, y)
 	var field_idx = xy_to_idx(x, y)
-
-	print(">>>",field_idx)
 	
 	if get_mask_at(x, y) != MaskState.BLIND: 
 		return true
@@ -295,16 +287,16 @@ func clear_field(x: int, y: int) -> bool:
 	#flood_step()
 
 	# mark obvious mines
-	mark_cleared_mines()
+	#mark_cleared_mines()
 
 	# full flood operation could be slow
 	# fullyFloodFrom(field)
 
 	# congrats, you are dead. or lost a life
-	if field_val == FieldState.MINE_LIVE: 
-		set_field_at(x, y, FieldState.MINE_EXPLODED)
-		set_mask_at(x, y, MaskState.MARKED_MINE)
-		return false
+	# if field_val == FieldState.MINE_LIVE: 
+	# 	set_field_at(x, y, FieldState.MINE_EXPLODED)
+	# 	set_mask_at(x, y, MaskState.MARKED_MINE)
+	# 	return false
 
 	return true
 
@@ -330,8 +322,8 @@ func make_move(x: int, y: int, type: MoveType):
 		set_mask_at(x, y, MaskState.MARKED_MINE)
 	elif type == MoveType.MARK_UNSURE:
 		set_mask_at(x, y, MaskState.MARKED_UNSURE)
-	elif type == MoveType.CLEAR_MARK:
-		set_mask_at(x, y, MaskState.CLEAR)
+	elif type == MoveType.RESET_MASK:
+		set_mask_at(x, y, MaskState.BLIND)
 	elif type == MoveType.CLEAR_FIELD:
 		clear_field(x, y)
 	else:
@@ -342,7 +334,8 @@ func flood_step():
 
 	var next_flood_list: PackedInt32Array = []
 
-	print("flood count: ", _flood_list.size())
+	if _flood_list.size() > 0:
+		print("flood count: ", _flood_list.size())
 
 	for field_idx in _flood_list:
 		if get_field_at_idx(field_idx) != FieldState.EMPTY:
@@ -366,3 +359,5 @@ func flood_step():
 	# replace closedList with current floodList, update floodList to next_flood_list
 	_closed_list = _flood_list
 	_flood_list = next_flood_list
+	
+	return not next_flood_list.is_empty()
