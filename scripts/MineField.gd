@@ -338,10 +338,11 @@ func flood_step():
 		print("flood count: ", _flood_list.size())
 
 	for field_idx in _flood_list:
+		set_mask_at_idx(field_idx, MaskState.CLEAR)
+
 		if get_field_at_idx(field_idx) != FieldState.EMPTY:
 			continue
 
-		set_mask_at_idx(field_idx, MaskState.CLEAR)
 		for neighbor_idx in get_neighbor_field_indizes(field_idx):
 			if get_mask_at_idx(neighbor_idx) == MaskState.BLIND:
 
@@ -349,9 +350,9 @@ func flood_step():
 				#if _flood_list.find(neighbor_idx) != -1: continue
 				#if _closed_list.find(neighbor_idx) != -1: continue
 
-				if (_closed_list.find(neighbor_idx) == -1 and 
-					next_flood_list.find(neighbor_idx) == -1 and
-					_flood_list.find(neighbor_idx) == -1): 
+				if (_closed_list.find(neighbor_idx) == -1
+					and next_flood_list.find(neighbor_idx) == -1 
+					and _flood_list.find(neighbor_idx) == -1): 
 					next_flood_list.append(neighbor_idx)
 				# these neighbors need to be considered next iteration
 				
