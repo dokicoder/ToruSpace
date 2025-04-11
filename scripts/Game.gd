@@ -6,9 +6,9 @@ func _field_to_texture_region(field: MineField.FieldState, mask: MineField.MaskS
 	if mask == MineField.MaskState.BLIND:
 		return Vector2(6 * 128, 128)
 	if mask == MineField.MaskState.MARKED_MINE:
-		return Vector2(0, 3 * 128)
-	if mask == MineField.MaskState.MARKED_UNSURE:
 		return Vector2(128, 3 * 128)
+	if mask == MineField.MaskState.MARKED_UNSURE:
+		return Vector2(0, 3 * 128)
 		
 	if field == MineField.FieldState.MINE_LIVE:
 		return Vector2(128, 128)

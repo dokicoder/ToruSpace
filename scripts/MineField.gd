@@ -27,7 +27,8 @@ var _height: int = -1
 # TODO: may be more efficient as some packed array
 var _field: PackedByteArray = []
 var _mask: PackedByteArray = []
-var _mine_idx_list: PackedInt32Array = []
+# list of mines to check for automatic marking
+var _clear_tracker_mine_idx_list: Array[int] = []
 var _flood_list: PackedInt32Array = []
 var _closed_list: PackedInt32Array = []
 
@@ -55,7 +56,7 @@ func reset():
 	#_mask.resize((_width * _height))
 	_field.clear()
 	_mask.clear()
-	_mine_idx_list.clear()
+	_clear_tracker_mine_idx_list.clear()
 	_flood_list.clear()
 	_closed_list.clear()
 
@@ -124,7 +125,7 @@ func drop_mine_at_idx(idx: int) -> bool:
 		return false
 
 	set_field_at_idx(idx, FieldState.MINE_LIVE)
-	_mine_idx_list.append(idx)
+	_clear_tracker_mine_idx_list.append(idx)
 	for neighbor_idx in get_neighbor_field_indizes(idx):
 		increment_field_at_idx(neighbor_idx)
 		
@@ -193,10 +194,10 @@ func _mom_helper(field_idx: int) -> bool:
 
 	var numAdjacentBlinds: int = 0
 	for neighbor_idx in get_neighbor_field_indizes(field_idx):
-		var neighborMask = _mask[neighbor_idx]
+		var neighbor_mask = get_mask_at_idx(neighbor_idx)
 		# count the mine candidates around number
 		# todo: ever heard of map/reduce ?
-		if neighborMask != MaskState.CLEAR: 
+		if neighbor_mask != MaskState.CLEAR: 
 			numAdjacentBlinds += 1
 		
 	# if number of blinds equals mine count it can be considered obvious how many mines there are
@@ -207,15 +208,16 @@ func mark_obvious_mine(field_idx: int) -> bool:
 
 	if field_val != FieldState.MINE_LIVE:
 		return false
-
+	
 	for neighbor_idx in get_neighbor_field_indizes(field_idx):
-		var neighborMask = _mask[neighbor_idx]
-		var neighbor_val = _field[neighbor_idx]
-		if neighborMask == MaskState.BLIND && neighbor_val != FieldState.MINE_LIVE:
+		var neighbor_mask = get_mask_at_idx(neighbor_idx)
+		var neighbor_val = get_field_at_idx(neighbor_idx)
+		if neighbor_mask == MaskState.BLIND && neighbor_val != FieldState.MINE_LIVE:
 			return false
-		if neighborMask == MaskState.CLEAR && !_mom_helper(neighbor_idx):
+		if neighbor_mask == MaskState.CLEAR && !_mom_helper(neighbor_idx):
 			return false
 
+	set_mask_at_idx(field_idx, MaskState.MARKED_MINE)
 	# TODO: make optional and expose to options menu
 	return true
 
@@ -259,7 +261,7 @@ func free_for_first_move(x: int, y: int):
 			# now actually delete surrounding mines and replace them with their according field value
 			set_field_at_idx(neighbor_idx, new_neighbor_val)
 			# remove 
-			_mine_idx_list.remove_at(_mine_idx_list.find(neighbor_idx))
+			_clear_tracker_mine_idx_list.remove_at(_clear_tracker_mine_idx_list.find(neighbor_idx))
 			num_removed_mines += 1
 	# there were mines removed, we want to know of that
 	# actualNumberOfMines -= num_removed_mines
@@ -293,28 +295,31 @@ func clear_field(x: int, y: int) -> bool:
 	# fullyFloodFrom(field)
 
 	# congrats, you are dead. or lost a life
-	# if field_val == FieldState.MINE_LIVE: 
+	return field_val != FieldState.MINE_LIVE
 	# 	set_field_at(x, y, FieldState.MINE_EXPLODED)
 	# 	set_mask_at(x, y, MaskState.MARKED_MINE)
 	# 	return false
-
-	return true
 
 
 # mark all mines the player probably has identified
 # TODO: maybe finer-tune implementation
 func mark_cleared_mines():
-	for index in _mine_idx_list:
-		if mark_obvious_mine(index):
+	print(_clear_tracker_mine_idx_list.size(), " mines to check")
+
+	var indizes_to_delete: Array[int] = []
+
+	for index in range(_clear_tracker_mine_idx_list.size()):
+		var mine_idx = _clear_tracker_mine_idx_list[index]
+		if mark_obvious_mine(mine_idx):
 			# mark for deletion
-			_mine_idx_list[index] = -1
-			# _numberOfMarkedMines += 1
+			indizes_to_delete.append(mine_idx)
 			print("marked cleared mine")
 
 	# filter the elements marked for deletion
-	_mine_idx_list = Array(_mine_idx_list).filter(func (e): e != -1)
+	for mine_idx in indizes_to_delete:
+		_clear_tracker_mine_idx_list.remove_at(_clear_tracker_mine_idx_list.find(mine_idx))
 
-func make_move(x: int, y: int, type: MoveType):
+func make_move(x: int, y: int, type: MoveType) -> bool:
 	assert(x >= 0 && x < _width && y >= 0 && y < _height)
 	print("Make move  -> ", MoveType.keys()[type], " at ", x, ", ", y)
 
@@ -325,14 +330,18 @@ func make_move(x: int, y: int, type: MoveType):
 	elif type == MoveType.RESET_MASK:
 		set_mask_at(x, y, MaskState.BLIND)
 	elif type == MoveType.CLEAR_FIELD:
-		clear_field(x, y)
+		return clear_field(x, y)
 	else:
 		print("Invalid move type")
+		
+	return true
 
 func flood_step():
 	# print("FloodStep - current floodList size: %d" % _flood_list.size())
 
 	var next_flood_list: PackedInt32Array = []
+
+	var did_flood = not _flood_list.is_empty()
 
 	if _flood_list.size() > 0:
 		print("flood count: ", _flood_list.size())
@@ -361,4 +370,4 @@ func flood_step():
 	_closed_list = _flood_list
 	_flood_list = next_flood_list
 	
-	return not next_flood_list.is_empty()
+	return did_flood

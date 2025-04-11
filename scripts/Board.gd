@@ -24,23 +24,25 @@ func _debug_set_all_field_mask_types():
 	board.set_field_at(9, 1, MineField.FieldState.MINE_LIVE)
 	board.set_field_at(10, 1, MineField.FieldState.MINE_EXPLODED)
 
-func _ready() -> void:
-	pass # Replace with function body.
-	board = MineField.new()
-
+func reset():
 	board.init(width, height)
 
 	var num_mines = int(width * height * 0.11)
 
 	board.deploy_random_mines(num_mines)
 
-	#_debug_set_all_field_mask_types()
+func _ready() -> void:
+	pass # Replace with function body.
+	board = MineField.new()
 
+	reset()
+
+	#_debug_set_all_field_mask_types()
 	
 func _process(delta: float) -> void:
 	delta_acc += delta
 	if(delta_acc > STEP):
 		delta_acc -= STEP
-		board.flood_step()
-		board.mark_cleared_mines()
+		if board.flood_step():
+			board.mark_cleared_mines()
 	
