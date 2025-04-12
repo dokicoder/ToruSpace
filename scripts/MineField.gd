@@ -1,32 +1,14 @@
 class_name MineField
 
-enum FieldState {
-	EMPTY = 0,
-	MINE_LIVE = 16,
-	MINE_EXPLODED = 32,
-}	
-
-enum MaskState {
-
-	BLIND = 0,
-	CLEAR = 1,
-	MARKED_UNSURE = 2,
-	MARKED_MINE = 3,
-}
-
-enum MoveType {
-	CLEAR_FIELD,
-	MARK_UNSURE,
-	MARK_MINE,
-	RESET_MASK,
-}
-
 var _width: int = -1
 var _height: int = -1
 
 # TODO: may be more efficient as some packed array
-var _field: PackedByteArray = []
-var _mask: PackedByteArray = []
+#var _field: PackedByteArray = []
+#var _mask: PackedByteArray = []
+
+var _cells: Array[Cell] = []
+
 # list of mines to check for automatic marking
 var _clear_tracker_mine_idx_list: Array[int] = []
 var _flood_list: PackedInt32Array = []
@@ -36,6 +18,13 @@ var _is_first_move = true
 var _num_live_mines = 0
 
 var _rng: RandomNumberGenerator
+
+enum MoveType {
+	CLEAR_FIELD,
+	MARK_UNSURE,
+	MARK_MINE,
+	RESET_MASK,
+}
 
 @export var width: int:
 	get:
@@ -54,8 +43,8 @@ func init(w, h):
 func reset():
 	#_field.resize((_width * _height))
 	#_mask.resize((_width * _height))
-	_field.clear()
-	_mask.clear()
+	#_field.clear()
+	#_mask.clear()
 	_clear_tracker_mine_idx_list.clear()
 	_flood_list.clear()
 	_closed_list.clear()
@@ -65,9 +54,26 @@ func reset():
 
 	_rng = RandomNumberGenerator.new()
 
+	# create cells
 	for i in range(_width * _height):
-		_field.append(FieldState.EMPTY)
-		_mask.append(MaskState.BLIND)
+		var cell = Cell.new()
+
+		var indizes = idx_to_xy(i)
+		cell.x = indizes[0]
+		cell.y = indizes[1]
+
+		_cells.append(cell)
+
+	# set up neighborship
+	for i in range(_width * _height):
+		var cell = get_cell_at_idx(i)
+
+		for neighbor_idx in get_neighbor_field_indizes(i):
+			cell.neighbors.append(get_cell_at_idx(neighbor_idx))
+
+
+		#_field.append(board = MineField.new())
+		#_mask.append(Cell.MaskState.BLIND)
 
 func xy_to_idx(x: int, y: int) -> int:
 	assert(x >= 0 && x < _width && y >= 0 && y < _height)
@@ -77,57 +83,26 @@ func idx_to_xy(idx: int) -> Array[int]:
 	assert(idx >= 0 && idx < _width * _height)
 	return [idx % _width, idx / _width]
 
-func get_field_at(x: int, y: int) -> FieldState:
-	assert(x >= 0 && x < _width && y >= 0 && y < _height)
-	return _field[y * _width + x]
+func get_cell_at(x: int, y: int) -> Cell:
+	var idx = xy_to_idx(x, y)
+	return get_cell_at_idx(idx)
 
-func get_field_at_idx(idx: int) -> FieldState:
+func get_cell_at_idx(idx: int) -> Cell:
 	assert(idx >= 0 && idx < _width * _height)
-	return _field[idx]
-
-func get_mask_at(x: int, y: int) -> MaskState:
-	assert(x >= 0 && x < _width && y >= 0 && y < _height)
-	return _mask[y * _width + x]
-
-func get_mask_at_idx(idx: int) -> MaskState:
-	assert(idx >= 0 && idx < _width * _height)
-	return _mask[idx]
-
-func set_field_at(x: int, y: int, state: FieldState):
-	assert(x >= 0 && x < _width && y >= 0 && y < _height)
-	set_field_at_idx(y * _width + x, state)
-
-func set_field_at_idx(idx: int, state: FieldState):
-	assert(idx >= 0 && idx < _width * _height)
-	_field[idx] = state
-
-func set_mask_at(x: int, y: int, state: MaskState):
-	assert(x >= 0 && x < _width && y >= 0 && y < _height)
-	set_mask_at_idx(y * _width + x, state)
-
-func set_mask_at_idx(idx: int, state: MaskState):
-	assert(idx >= 0 && idx < _width * _height)
-	_mask[idx] = state
-	
-func increment_field_at(x: int, y: int):
-	increment_field_at_idx(y * _width + x)
-
-func increment_field_at_idx(idx: int):
-	var val = get_field_at_idx(idx)
-	if val < 9:
-		set_field_at_idx(idx, val+1)
+	return _cells[idx]
 
 func drop_mine_at(x:int, y:int) -> bool:
 	return drop_mine_at_idx( xy_to_idx(x, y) )
 
 func drop_mine_at_idx(idx: int) -> bool:
-	if _field[idx] == FieldState.MINE_LIVE || _field[idx] == FieldState.MINE_EXPLODED:
+	var cell = get_cell_at_idx(idx)
+	if cell.field == Cell.FieldState.MINE_LIVE || cell.field == Cell.FieldState.MINE_EXPLODED:
 		return false
 
-	set_field_at_idx(idx, FieldState.MINE_LIVE)
+	cell.field = Cell.FieldState.MINE_LIVE
 	_clear_tracker_mine_idx_list.append(idx)
-	for neighbor_idx in get_neighbor_field_indizes(idx):
-		increment_field_at_idx(neighbor_idx)
+	for neighbor in cell.neighbors:
+		neighbor.increment_field()
 		
 	_num_live_mines += 1
 	return true
@@ -186,88 +161,83 @@ func get_neighbor_field_indizes(field_idx: int) -> Array[int]:
 		xy_to_idx(leftX, bottomY), xy_to_idx(x, bottomY), xy_to_idx(rightX, bottomY)
 	]
 
-func _mom_helper(field_idx: int) -> bool:
-	var field_val = get_field_at_idx(field_idx)
-
-	if(field_val == FieldState.MINE_LIVE): 
+func _mom_helper(cell: Cell) -> bool:
+	if(cell.field == Cell.FieldState.MINE_LIVE): 
 		return true
 
 	var numAdjacentBlinds: int = 0
-	for neighbor_idx in get_neighbor_field_indizes(field_idx):
-		var neighbor_mask = get_mask_at_idx(neighbor_idx)
+	for neighbor in cell.neighbors:
 		# count the mine candidates around number
 		# todo: ever heard of map/reduce ?
-		if neighbor_mask != MaskState.CLEAR: 
+		if neighbor.mask != Cell.MaskState.CLEAR: 
 			numAdjacentBlinds += 1
 		
 	# if number of blinds equals mine count it can be considered obvious how many mines there are
-	return numAdjacentBlinds == field_val
+	return numAdjacentBlinds == cell.field
 
 func mark_obvious_mine(field_idx: int) -> bool:
-	var field_val = get_field_at_idx(field_idx)
+	var cell = get_cell_at_idx(field_idx)
 
-	if field_val != FieldState.MINE_LIVE:
+	if cell.field != Cell.FieldState.MINE_LIVE:
 		return false
 	
-	for neighbor_idx in get_neighbor_field_indizes(field_idx):
-		var neighbor_mask = get_mask_at_idx(neighbor_idx)
-		var neighbor_val = get_field_at_idx(neighbor_idx)
-		if neighbor_mask == MaskState.BLIND && neighbor_val != FieldState.MINE_LIVE:
+	for neighbor in cell.neighbors:
+		if neighbor.mask == Cell.MaskState.BLIND && neighbor.field != Cell.FieldState.MINE_LIVE:
 			return false
-		if neighbor_mask == MaskState.CLEAR && !_mom_helper(neighbor_idx):
+		if neighbor.mask == Cell.MaskState.CLEAR && !_mom_helper(neighbor):
 			return false
 
-	set_mask_at_idx(field_idx, MaskState.MARKED_MINE)
+	cell.mask = Cell.MaskState.MARKED_MINE
 	# TODO: make optional and expose to options menu
 	return true
 
-func free_for_first_move(x: int, y: int):
-	_is_first_move = false
-	var field_val = get_field_at(x, y)
+# func free_for_first_move(x: int, y: int):
+# 	_is_first_move = false
+# 	var field_val = get_field_at(x, y)
 
-	if field_val == FieldState.EMPTY:
-		return
+# 	if field_val == Cell.FieldState.EMPTY:
+# 		return
 		
-	var field_idx = xy_to_idx(x, y)
+# 	var field_idx = xy_to_idx(x, y)
 	
-	# if field is a mine, just delete it and decrement neighbors
-	if field_val == FieldState.MINE_LIVE:
-		set_field_at(x, y, FieldState.EMPTY)
+# 	# if field is a mine, just delete it and decrement neighbors
+# 	if field_val == Cell.FieldState.MINE_LIVE:
+# 		set_field_at(x, y, Cell.FieldState.EMPTY)
 
-		for neighbor_idx in get_neighbor_field_indizes(field_idx):
-			var neighbor_val = get_field_at_idx(neighbor_idx)
-			# if neighbor is mine, increment center field (which now contains a number, not a mine)
-			if neighbor_val == FieldState.MINE_LIVE: 
-				set_field_at(x, y, FieldState.EMPTY)
-			# tell neighbor that mine has vanished
-			elif neighbor_val != FieldState.EMPTY:
-				set_field_at_idx(neighbor_idx, neighbor_val - 1)
+# 		for neighbor_idx in get_neighbor.field_indizes(field_idx):
+# 			var neighbor_val = get_field_at_idx(neighbor_idx)
+# 			# if neighbor is mine, increment center field (which now contains a number, not a mine)
+# 			if neighbor_val == Cell.FieldState.MINE_LIVE: 
+# 				set_field_at(x, y, Cell.FieldState.EMPTY)
+# 			# tell neighbor that mine has vanished
+# 			elif neighbor_val != Cell.FieldState.EMPTY:
+# 				set_field_at_idx(neighbor_idx, neighbor_val - 1)
 
-	# either it did before or it does now after update: field contains number
-	# act as if surrounding mines have been deleted
-	var num_removed_mines = 0
+# 	# either it did before or it does now after update: field contains number
+# 	# act as if surrounding mines have been deleted
+# 	var num_removed_mines = 0
 
-	for neighbor_idx in get_neighbor_field_indizes(field_idx):
-		var neighbor_val = get_field_at_idx(neighbor_idx)
-		# tell all neighbors of any surrounding mine that mine has vanished
-		if neighbor_val == FieldState.MINE_LIVE:
-			var new_neighbor_val = 0
-			for neighbor_neighbor_idx in get_neighbor_field_indizes(neighbor_idx):
-				var neighbor_neighbor_val = get_field_at_idx(neighbor_neighbor_idx)
-				if neighbor_neighbor_val == FieldState.MINE_LIVE:
-					new_neighbor_val += 1
-				elif neighbor_neighbor_val != FieldState.EMPTY:
-					set_field_at_idx(neighbor_neighbor_idx, neighbor_neighbor_val - 1)
-			# now actually delete surrounding mines and replace them with their according field value
-			set_field_at_idx(neighbor_idx, new_neighbor_val)
-			# remove 
-			_clear_tracker_mine_idx_list.remove_at(_clear_tracker_mine_idx_list.find(neighbor_idx))
-			num_removed_mines += 1
-	# there were mines removed, we want to know of that
-	# actualNumberOfMines -= num_removed_mines
-	# add removed mines again somewhere else
-	# TODO: somewhere else could actually happen to be the same place --> fix that
-	deploy_random_mines(num_removed_mines)
+# 	for neighbor_idx in get_neighbor.field_indizes(field_idx):
+# 		var neighbor_val = get_field_at_idx(neighbor_idx)
+# 		# tell all neighbors of any surrounding mine that mine has vanished
+# 		if neighbor_val == Cell.FieldState.MINE_LIVE:
+# 			var new_neighbor_val = 0
+# 			for neighbor_neighbor_idx in get_neighbor.field_indizes(neighbor_idx):
+# 				var neighbor_neighbor_val = get_field_at_idx(neighbor_neighbor_idx)
+# 				if neighbor_neighbor_val == Cell.FieldState.MINE_LIVE:
+# 					new_neighbor_val += 1
+# 				elif neighbor_neighbor_val != Cell.FieldState.EMPTY:
+# 					set_field_at_idx(neighbor_neighbor_idx, neighbor_neighbor_val - 1)
+# 			# now actually delete surrounding mines and replace them with their according field value
+# 			set_field_at_idx(neighbor_idx, new_neighbor_val)
+# 			# remove 
+# 			_clear_tracker_mine_idx_list.remove_at(_clear_tracker_mine_idx_list.find(neighbor_idx))
+# 			num_removed_mines += 1
+# 	# there were mines removed, we want to know of that
+# 	# actualNumberOfMines -= num_removed_mines
+# 	# add removed mines again somewhere else
+# 	# TODO: somewhere else could actually happen to be the same place --> fix that
+# 	deploy_random_mines(num_removed_mines)
 
 func clear_field(x: int, y: int) -> bool:
 	#if _is_first_move: 
@@ -275,16 +245,16 @@ func clear_field(x: int, y: int) -> bool:
 	
 	print_debug("clear field (%", x, " ", y)
 	
-	var field_val = get_field_at(x, y)
-	#var field_mask = get_mask_at(x, y)
+	var cell = get_cell_at(x, y)
+
 	var field_idx = xy_to_idx(x, y)
 	
-	if get_mask_at(x, y) != MaskState.BLIND: 
+	if cell.mask != Cell.MaskState.BLIND: 
 		return true
 
 	_flood_list.append(field_idx)
 	
-	set_mask_at_idx(field_idx, MaskState.CLEAR)
+	cell.mask = Cell.MaskState.CLEAR
 
 	#flood_step()
 
@@ -295,9 +265,9 @@ func clear_field(x: int, y: int) -> bool:
 	# fullyFloodFrom(field)
 
 	# congrats, you are dead. or lost a life
-	return field_val != FieldState.MINE_LIVE
-	# 	set_field_at(x, y, FieldState.MINE_EXPLODED)
-	# 	set_mask_at(x, y, MaskState.MARKED_MINE)
+	return cell.field != Cell.FieldState.MINE_LIVE
+	# 	set_field_at(x, y, Cell.FieldState.MINE_EXPLODED)
+	# 	set_mask_at(x, y, Cell.MaskState.MARKED_MINE)
 	# 	return false
 
 
@@ -323,12 +293,14 @@ func make_move(x: int, y: int, type: MoveType) -> bool:
 	assert(x >= 0 && x < _width && y >= 0 && y < _height)
 	print("Make move  -> ", MoveType.keys()[type], " at ", x, ", ", y)
 
+	var cell = get_cell_at(x, y)
+
 	if type == MoveType.MARK_MINE:
-		set_mask_at(x, y, MaskState.MARKED_MINE)
+		cell.mask = Cell.MaskState.MARKED_MINE
 	elif type == MoveType.MARK_UNSURE:
-		set_mask_at(x, y, MaskState.MARKED_UNSURE)
+		cell.mask = Cell.MaskState.MARKED_UNSURE
 	elif type == MoveType.RESET_MASK:
-		set_mask_at(x, y, MaskState.BLIND)
+		cell.mask = Cell.MaskState.BLIND
 	elif type == MoveType.CLEAR_FIELD:
 		return clear_field(x, y)
 	else:
@@ -347,17 +319,20 @@ func flood_step():
 		print("flood count: ", _flood_list.size())
 
 	for field_idx in _flood_list:
-		set_mask_at_idx(field_idx, MaskState.CLEAR)
+		var cell = get_cell_at_idx(field_idx)
+		cell.mask = Cell.MaskState.CLEAR
 
-		if get_field_at_idx(field_idx) != FieldState.EMPTY:
+		if cell.field != Cell.FieldState.EMPTY:
 			continue
 
-		for neighbor_idx in get_neighbor_field_indizes(field_idx):
-			if get_mask_at_idx(neighbor_idx) == MaskState.BLIND:
+		for neighbor in cell.neighbors:
+			if neighbor.mask == Cell.MaskState.BLIND:
 
 				# if neighbor is already in closed or current list, skip it
 				#if _flood_list.find(neighbor_idx) != -1: continue
 				#if _closed_list.find(neighbor_idx) != -1: continue
+
+				var neighbor_idx = xy_to_idx(neighbor.x, neighbor.y)
 
 				if (_closed_list.find(neighbor_idx) == -1
 					and next_flood_list.find(neighbor_idx) == -1 

@@ -5,17 +5,17 @@ const MOVE_STEP: float = 200.0
 
 const FieldScene: PackedScene = preload("res://scenes/Field.tscn")
 
-func _field_to_texture_region(field: MineField.FieldState, mask: MineField.MaskState) -> Vector2:
-	if mask == MineField.MaskState.BLIND:
+func _field_to_texture_region(field: Cell.FieldState, mask: Cell.MaskState) -> Vector2:
+	if mask == Cell.MaskState.BLIND:
 		return Vector2(6 * 128, 128)
-	if mask == MineField.MaskState.MARKED_MINE:
+	if mask == Cell.MaskState.MARKED_MINE:
 		return Vector2(128, 3 * 128)
-	if mask == MineField.MaskState.MARKED_UNSURE:
+	if mask == Cell.MaskState.MARKED_UNSURE:
 		return Vector2(0, 3 * 128)
 		
-	if field == MineField.FieldState.MINE_LIVE:
+	if field == Cell.FieldState.MINE_LIVE:
 		return Vector2(128, 128)
-	if field == MineField.FieldState.MINE_EXPLODED: 
+	if field == Cell.FieldState.MINE_EXPLODED: 
 		return Vector2(128, 2 * 128)
 		
 	if field > 8: 
@@ -41,7 +41,8 @@ func _generate_sprite_board():
 		field.position.y = (y - 0.5 * Brd.height) * 128 + 64
 		
 		field.texture = field.texture.duplicate()
-		field.texture.region.position = _field_to_texture_region(Brd.board.get_field_at_idx(idx), Brd.board.get_mask_at_idx(idx)) #Vector2((2 + idx % 3) * 128, 0)
+		var cell = Brd.board.get_cell_at(x, y)
+		field.texture.region.position = _field_to_texture_region(cell.field, cell.mask) #Vector2((2 + idx % 3) * 128, 0)
 
 		add_child(field)
 
@@ -96,4 +97,5 @@ func _input(event):
 func _process(delta: float) -> void:
 	#print("%s" % (get_children().size()))
 	for field in get_children():
-		field.texture.region.position = _field_to_texture_region(Brd.board.get_field_at(field._x, field._y), Brd.board.get_mask_at(field._x, field._y))
+		var cell = Brd.board.get_cell_at(field._x, field._y)
+		field.texture.region.position = _field_to_texture_region(cell.field, cell.mask)

@@ -10,19 +10,19 @@ var delta_acc: float = 0.0
 const STEP = 0.1
 
 func _debug_set_all_field_mask_types():
-	board.set_mask_at(0, 0, MineField.MaskState.MARKED_UNSURE)
-	board.set_mask_at(1, 0, MineField.MaskState.MARKED_MINE)
-	board.set_mask_at(2, 0, MineField.MaskState.BLIND)
-	board.set_mask_at(3, 0, MineField.MaskState.CLEAR)
+	board.set_mask_at(0, 0, Cell.MaskState.MARKED_UNSURE)
+	board.set_mask_at(1, 0, Cell.MaskState.MARKED_MINE)
+	board.set_mask_at(2, 0, Cell.MaskState.BLIND)
+	board.set_mask_at(3, 0, Cell.MaskState.CLEAR)
 	
 	for x in range(0, 9):
-		board.set_mask_at(x, 1, MineField.MaskState.CLEAR)
+		board.set_mask_at(x, 1, Cell.MaskState.CLEAR)
 		board.set_field_at(x, 1, x)
 
-	board.set_mask_at(9, 1, MineField.MaskState.CLEAR)
-	board.set_mask_at(10, 1, MineField.MaskState.CLEAR)
-	board.set_field_at(9, 1, MineField.FieldState.MINE_LIVE)
-	board.set_field_at(10, 1, MineField.FieldState.MINE_EXPLODED)
+	board.set_mask_at(9, 1, Cell.MaskState.CLEAR)
+	board.set_mask_at(10, 1, Cell.MaskState.CLEAR)
+	board.set_field_at(9, 1, Cell.FieldState.MINE_LIVE)
+	board.set_field_at(10, 1, Cell.FieldState.MINE_EXPLODED)
 
 func reset():
 	board.init(width, height)
