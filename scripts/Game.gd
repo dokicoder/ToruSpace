@@ -1,5 +1,8 @@
 extends Node
 
+@export var camera: Node
+const MOVE_STEP: float = 200.0
+
 const FieldScene: PackedScene = preload("res://scenes/Field.tscn")
 
 func _field_to_texture_region(field: MineField.FieldState, mask: MineField.MaskState) -> Vector2:
@@ -78,6 +81,16 @@ func _generate_sprite_board():
 
 func _ready() -> void:
 	_generate_sprite_board()
+	
+func _input(event):
+	if event.is_action_pressed("Left"):
+		camera.position.x -= MOVE_STEP
+	if event.is_action_pressed("Right"):
+		camera.position.x += MOVE_STEP
+	if event.is_action_pressed("Up"):
+		camera.position.y -= MOVE_STEP
+	if event.is_action_pressed("Down"):
+		camera.position.y += MOVE_STEP
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
