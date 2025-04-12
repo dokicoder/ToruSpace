@@ -11,8 +11,7 @@ var _cells: Array[Cell] = []
 
 # list of mines to check for automatic marking
 var _clear_tracker_mine_idx_list: Array[int] = []
-var _flood_list: PackedInt32Array = []
-var _closed_list: PackedInt32Array = []
+var _flood_list: Array[Cell] = []
 
 var _is_first_move = true
 var _num_live_mines = 0
@@ -47,7 +46,6 @@ func reset():
 	#_mask.clear()
 	_clear_tracker_mine_idx_list.clear()
 	_flood_list.clear()
-	_closed_list.clear()
 
 	_is_first_move = true
 	_num_live_mines = 0
@@ -252,7 +250,7 @@ func clear_field(x: int, y: int) -> bool:
 	if cell.mask != Cell.MaskState.BLIND: 
 		return true
 
-	_flood_list.append(field_idx)
+	_flood_list.append(cell)
 	
 	cell.mask = Cell.MaskState.CLEAR
 
@@ -311,19 +309,20 @@ func make_move(x: int, y: int, type: MoveType) -> bool:
 func flood_step():
 	# print("FloodStep - current floodList size: %d" % _flood_list.size())
 
-	var next_flood_list: PackedInt32Array = []
+	var next_flood_list: Array[Cell] = []
 
 	var did_flood = not _flood_list.is_empty()
 
 	if _flood_list.size() > 0:
 		print("flood count: ", _flood_list.size())
 
-	for field_idx in _flood_list:
-		var cell = get_cell_at_idx(field_idx)
+	for cell in _flood_list:
 		cell.mask = Cell.MaskState.CLEAR
 
 		if cell.field != Cell.FieldState.EMPTY:
 			continue
+
+		cell.closed = true
 
 		for neighbor in cell.neighbors:
 			if neighbor.mask == Cell.MaskState.BLIND:
@@ -332,17 +331,14 @@ func flood_step():
 				#if _flood_list.find(neighbor_idx) != -1: continue
 				#if _closed_list.find(neighbor_idx) != -1: continue
 
-				var neighbor_idx = xy_to_idx(neighbor.x, neighbor.y)
-
-				if (_closed_list.find(neighbor_idx) == -1
-					and next_flood_list.find(neighbor_idx) == -1 
-					and _flood_list.find(neighbor_idx) == -1): 
-					next_flood_list.append(neighbor_idx)
+				if (not neighbor.closed
+					and next_flood_list.find(neighbor) == -1 
+					and _flood_list.find(neighbor) == -1): 
+					next_flood_list.append(neighbor)
 				# these neighbors need to be considered next iteration
 				
 	
 	# replace closedList with current floodList, update floodList to next_flood_list
-	_closed_list = _flood_list
 	_flood_list = next_flood_list
 	
 	return did_flood
