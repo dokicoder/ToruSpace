@@ -10,7 +10,7 @@ var _height: int = -1
 var _cells: Array[Cell] = []
 
 # list of mines to check for automatic marking
-var _clear_tracker_mine_idx_list: Array[int] = []
+var _clear_tracker_mine_list: Array[Cell] = []
 var _flood_list: Array[Cell] = []
 
 var _is_first_move = true
@@ -44,7 +44,7 @@ func reset():
 	#_mask.resize((_width * _height))
 	#_field.clear()
 	#_mask.clear()
-	_clear_tracker_mine_idx_list.clear()
+	_clear_tracker_mine_list.clear()
 	_flood_list.clear()
 
 	_is_first_move = true
@@ -98,7 +98,7 @@ func drop_mine_at_idx(idx: int) -> bool:
 		return false
 
 	cell.field = Cell.FieldState.MINE_LIVE
-	_clear_tracker_mine_idx_list.append(idx)
+	_clear_tracker_mine_list.append(cell)
 	for neighbor in cell.neighbors:
 		neighbor.increment_field()
 		
@@ -173,9 +173,7 @@ func _mom_helper(cell: Cell) -> bool:
 	# if number of blinds equals mine count it can be considered obvious how many mines there are
 	return numAdjacentBlinds == cell.field
 
-func mark_obvious_mine(field_idx: int) -> bool:
-	var cell = get_cell_at_idx(field_idx)
-
+func mark_obvious_mine(cell: Cell) -> bool:
 	if cell.field != Cell.FieldState.MINE_LIVE:
 		return false
 	
@@ -229,7 +227,7 @@ func mark_obvious_mine(field_idx: int) -> bool:
 # 			# now actually delete surrounding mines and replace them with their according field value
 # 			set_field_at_idx(neighbor_idx, new_neighbor_val)
 # 			# remove 
-# 			_clear_tracker_mine_idx_list.remove_at(_clear_tracker_mine_idx_list.find(neighbor_idx))
+# 			_clear_tracker_mine_list.remove_at(_clear_tracker_mine_list.find(neighbor_idx))
 # 			num_removed_mines += 1
 # 	# there were mines removed, we want to know of that
 # 	# actualNumberOfMines -= num_removed_mines
@@ -272,20 +270,20 @@ func clear_field(x: int, y: int) -> bool:
 # mark all mines the player probably has identified
 # TODO: maybe finer-tune implementation
 func mark_cleared_mines():
-	print(_clear_tracker_mine_idx_list.size(), " mines to check")
+	print(_clear_tracker_mine_list.size(), " mines to check")
 
-	var indizes_to_delete: Array[int] = []
+	var mine_cells_to_delete: Array[Cell] = []
 
-	for index in range(_clear_tracker_mine_idx_list.size()):
-		var mine_idx = _clear_tracker_mine_idx_list[index]
-		if mark_obvious_mine(mine_idx):
+	for index in range(_clear_tracker_mine_list.size()):
+		var mine_cell = _clear_tracker_mine_list[index]
+		if mark_obvious_mine(mine_cell):
 			# mark for deletion
-			indizes_to_delete.append(mine_idx)
+			mine_cells_to_delete.append(mine_cell)
 			print("marked cleared mine")
 
 	# filter the elements marked for deletion
-	for mine_idx in indizes_to_delete:
-		_clear_tracker_mine_idx_list.remove_at(_clear_tracker_mine_idx_list.find(mine_idx))
+	for mine_cell in mine_cells_to_delete:
+		_clear_tracker_mine_list.remove_at(_clear_tracker_mine_list.find(mine_cell))
 
 func make_move(x: int, y: int, type: MoveType) -> bool:
 	assert(x >= 0 && x < _width && y >= 0 && y < _height)
