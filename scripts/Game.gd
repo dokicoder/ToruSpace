@@ -67,5 +67,6 @@ func _process(delta: float) -> void:
 	if(delta_acc > STEP):
 		delta_acc -= STEP
 		if board.flood_step():
+			# TODO: this is still very inefficient - all mines are checked even	though nothing changed in the vicinity of most of them
 			board.mark_cleared_mines()
 	
