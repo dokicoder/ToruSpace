@@ -3,23 +3,16 @@ class_name MineField
 var _width: int = -1
 var _height: int = -1
 
-# TODO: may be more efficient as some packed array
-#var _field: PackedByteArray = []
-#var _mask: PackedByteArray = []
-
 var _cells: Array[Cell] = []
 
 # list of mines to check for automatic marking
 var _clear_tracker_mine_list: Array[Cell] = []
 var _flood_list: Array[Cell] = []
 
-var _is_first_move = true
-var _num_live_mines = 0
-
 var _rng: RandomNumberGenerator
 
 enum MoveType {
-	CLEAR_FIELD,
+	UNMASK_FIELD,
 	MARK_UNSURE,
 	MARK_MINE,
 	RESET_MASK,
@@ -40,15 +33,10 @@ func init(w, h):
 	reset()
 
 func reset():
-	#_field.resize((_width * _height))
-	#_mask.resize((_width * _height))
-	#_field.clear()
-	#_mask.clear()
+	_cells.resize(_width * _height)
+	_cells.clear()
 	_clear_tracker_mine_list.clear()
 	_flood_list.clear()
-
-	_is_first_move = true
-	_num_live_mines = 0
 
 	_rng = RandomNumberGenerator.new()
 
@@ -62,7 +50,7 @@ func reset():
 
 		_cells.append(cell)
 
-	# set up neighborship
+	# set up neighbor information
 	for i in range(_width * _height):
 		var cell = get_cell_at_idx(i)
 
@@ -101,8 +89,7 @@ func drop_mine_at_idx(idx: int) -> bool:
 	_clear_tracker_mine_list.append(cell)
 	for neighbor in cell.neighbors:
 		neighbor.increment_field()
-		
-	_num_live_mines += 1
+
 	return true
 
 func deploy_random_mines(numMines: int):
@@ -235,40 +222,26 @@ func mark_obvious_mine(cell: Cell) -> bool:
 # 	# TODO: somewhere else could actually happen to be the same place --> fix that
 # 	deploy_random_mines(num_removed_mines)
 
-func clear_field(x: int, y: int) -> bool:
+func unmask_field(x: int, y: int) -> bool:
 	#if _is_first_move: 
-	#free_for_first_move(x, y)
-	
-	print_debug("clear field (%", x, " ", y)
+	#	free_for_first_move(x, y)
+	print_debug("unmask field (%", x, " ", y)
 	
 	var cell = get_cell_at(x, y)
-
-	var field_idx = xy_to_idx(x, y)
-	
 	if cell.mask != Cell.MaskState.BLIND: 
 		return true
 
-	_flood_list.append(cell)
-	
 	cell.mask = Cell.MaskState.CLEAR
+	_flood_list.append(cell)
 
-	#flood_step()
-
-	# mark obvious mines
-	#mark_cleared_mines()
-
-	# full flood operation could be slow
-	# fullyFloodFrom(field)
-
-	# congrats, you are dead. or lost a life
+	# if unmasked field is a mine, false is returned
 	return cell.field != Cell.FieldState.MINE_LIVE
-	# 	set_field_at(x, y, Cell.FieldState.MINE_EXPLODED)
-	# 	set_mask_at(x, y, Cell.MaskState.MARKED_MINE)
-	# 	return false
-
+	# cell.field = Cell.FieldState.MINE_EXPLODED
 
 # mark all mines the player probably has identified
-# TODO: maybe finer-tune implementation
+# TODO: this should not be done by default later
+# I guess this is either a perk or is delayed until the player has identified a certain number of mines
+# or is done delayed by some "worker drones"
 func mark_cleared_mines():
 	print(_clear_tracker_mine_list.size(), " mines to check")
 
@@ -297,8 +270,8 @@ func make_move(x: int, y: int, type: MoveType) -> bool:
 		cell.mask = Cell.MaskState.MARKED_UNSURE
 	elif type == MoveType.RESET_MASK:
 		cell.mask = Cell.MaskState.BLIND
-	elif type == MoveType.CLEAR_FIELD:
-		return clear_field(x, y)
+	elif type == MoveType.UNMASK_FIELD:
+		return unmask_field(x, y)
 	else:
 		print("Invalid move type")
 		
@@ -325,18 +298,12 @@ func flood_step():
 		for neighbor in cell.neighbors:
 			if neighbor.mask == Cell.MaskState.BLIND:
 
-				# if neighbor is already in closed or current list, skip it
-				#if _flood_list.find(neighbor_idx) != -1: continue
-				#if _closed_list.find(neighbor_idx) != -1: continue
-
+				# only add neighbor if it is not closed and not already on the list
 				if (not neighbor.closed
 					and next_flood_list.find(neighbor) == -1 
 					and _flood_list.find(neighbor) == -1): 
-					next_flood_list.append(neighbor)
-				# these neighbors need to be considered next iteration
-				
-	
-	# replace closedList with current floodList, update floodList to next_flood_list
+					next_flood_list.append(neighbor)	
+	# flood list for next iteration has been defined				
 	_flood_list = next_flood_list
 	
 	return did_flood
