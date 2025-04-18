@@ -1,0 +1,18 @@
+[gd_scene load_steps=5 format=3 uid="uid://beywv3esliy6w"]
+
+[ext_resource type="Texture2D" uid="uid://gwb807nfvypp" path="res://textures/TSTextureAtlas.png" id="1_drirk"]
+[ext_resource type="Script" path="res://scripts/CellNode3D.gd" id="2_cu8fs"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xban4"]
+albedo_texture = ExtResource("1_drirk")
+uv1_scale = Vector3(0.125, 0.125, 0.125)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_qnrlp"]
+material = SubResource("StandardMaterial3D_xban4")
+size = Vector2(1, 1)
+subdivide_width = 1
+subdivide_depth = 4
+
+[node name="CellNode3d" type="MeshInstance3D"]
+mesh = SubResource("PlaneMesh_qnrlp")
+script = ExtResource("2_cu8fs")

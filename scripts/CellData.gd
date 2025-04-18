@@ -37,7 +37,7 @@ var mask: MaskState:
 		_mask = value
 		if node: node.update_texture()
 
-var node: CellNode
+var node: CellNode3D
 var neighbors: Array[CellData] = []
 
 # cell data

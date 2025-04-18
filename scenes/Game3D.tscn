@@ -1,0 +1,29 @@
+[gd_scene load_steps=4 format=3 uid="uid://dp3n4xcdkknmm"]
+
+[ext_resource type="Script" path="res://scripts/Game.gd" id="1_cq6ij"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_1sul1"]
+
+[sub_resource type="Environment" id="Environment_fj60c"]
+ambient_light_source = 2
+ambient_light_color = Color(1, 1, 1, 1)
+
+[node name="Game3d" type="Node3D"]
+
+[node name="Board" type="Node3D" parent="." node_paths=PackedStringArray("camera")]
+script = ExtResource("1_cq6ij")
+camera = NodePath("../CameraCenter/Camera3D")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Board"]
+transform = Transform3D(0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, 0.707107, 0, 0, 0)
+visible = false
+mesh = SubResource("BoxMesh_1sul1")
+
+[node name="CameraCenter" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.829037, -0.559193, 0, 0.559193, 0.829037, 0, 0, 0)
+
+[node name="Camera3D" type="Camera3D" parent="CameraCenter"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 30)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_fj60c")

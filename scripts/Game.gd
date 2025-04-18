@@ -1,9 +1,9 @@
-class_name GameManager extends Node
+class_name GameManager extends Node3D
 
 @export var camera: Node
 const MOVE_STEP: float = 200.0
 
-const CellNode: PackedScene = preload("res://scenes/CellNode.tscn")
+const CellNode: PackedScene = preload("res://scenes/CellNode3D.tscn")
 
 const STEP = 0.1
 
@@ -50,16 +50,37 @@ func _generate_sprite_board():
 	print("generate")
 
 	for cell in board.cells:
-		var node = CellNode.instantiate() as CellNode
-		node.texture = node.texture.duplicate()
+		var node = CellNode.instantiate()
+		node.mesh = node.mesh.duplicate()
+		var material = node.mesh.surface_get_material(0)
+		node.mesh.surface_set_material(0, material.duplicate())
 
+		#node.texture = node.texture.duplicate()
+
+		if(node == null):
+			print("baddo")
+		else:
+			print("goody")
+		
 		# link up visual and data
 		node.data = cell
 		cell.node = node
+		
+		node.rotation.x = PI * 0.5
+		
 		node.update_transform()
 		node.update_texture()
 
-		node.activated.connect(handle_node_click)
+		#node.position.x = (cell.x - 0.5 * Config.WIDTH) * 0.5
+		#node.position.y = (cell.y - 0.5 * Config.HEIGHT) * 0.5
+
+		#node.scale.x = 100
+		#node.scale.y = 100
+		#node.scale.z = 100
+		
+		
+
+		#node.activated.connect(handle_node_click)
 
 		add_child(node)
 	
@@ -74,6 +95,8 @@ func _input(event):
 		camera.position.y += MOVE_STEP
 
 func _process(delta: float) -> void:
+	rotation.z += 0.3 * delta
+	
 	delta_acc += delta
 	if(delta_acc > STEP):
 		delta_acc -= STEP
