@@ -11,15 +11,26 @@ var board: BoardData
 
 var delta_acc: float = 0.0
 
-func _ready() -> void:
-	board = BoardData.new()
-
-	board.init(Config.WIDTH, Config.HEIGHT)
-
+func _deploy_mines():
 	const mine_ratio: float = 0.09
 	var num_mines = int(Config.WIDTH * Config.HEIGHT * mine_ratio)
 
 	board.deploy_random_mines(num_mines)
+
+func _ready() -> void:
+	board = BoardData.new()
+	board.init(Config.WIDTH, Config.HEIGHT)
+	_deploy_mines()
+
+	_generate_sprite_board()
+
+func _reset():
+	for cell in board.cells:
+		cell.node.queue_free()
+		cell.node = null
+
+	board.reset()
+	_deploy_mines()
 
 	_generate_sprite_board()
 
@@ -30,7 +41,7 @@ func handle_node_click(event: InputEvent, cell: CellData):
 					if event.pressed:
 						print("%d / %d" % [cell.x, cell.y])
 						if not board.make_move(cell, BoardData.MoveType.UNMASK_FIELD):
-							board.reset()
+							_reset()
 				MOUSE_BUTTON_RIGHT:
 					if event.pressed:
 						board.make_move(cell, BoardData.MoveType.RESET_MASK)
