@@ -1,4 +1,4 @@
 class_name TSConfig extends Node
 
-const WIDTH: int = 101
-const HEIGHT: int = 31
+const WIDTH: int = 185
+const HEIGHT: int = 62

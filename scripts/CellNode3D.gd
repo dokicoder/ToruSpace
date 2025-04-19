@@ -61,10 +61,10 @@ func update_mesh():
 	verts.append(get_torus_position(x1, y2))
 	verts.append(get_torus_position(x2, y2))
 	verts.append(get_torus_position(x2, y1))
-
-	uvs.append(Vector2(0,0))
-	uvs.append(Vector2(0,1))
+	
 	uvs.append(Vector2(1,1))
+	uvs.append(Vector2(0,1))
+	uvs.append(Vector2(0,0))
 	uvs.append(Vector2(1,0))
 
 	normals.append(get_torus_mormal(x1, y1))

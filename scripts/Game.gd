@@ -34,6 +34,8 @@ func _ready() -> void:
 	_deploy_mines()
 
 	_generate_sprite_board()
+	
+	update_camera_transform(x, y)
 
 func _reset():
 	for cell in board.cells:
@@ -63,8 +65,8 @@ func update_camera_transform(xpos: float, ypos: float):
 	const smaller_radius = s / (2 * sin(PI / Config.HEIGHT))
 	const larger_radius = s / (2 * sin(PI / Config.WIDTH))
 
-	var smaller_angle = PI * 2 * ypos / Config.HEIGHT
-	var larger_angle = PI * 2 * xpos / Config.WIDTH
+	var smaller_angle = PI * 2 * (ypos + 0.005) / Config.HEIGHT
+	var larger_angle = PI * 2 * (xpos + 0.005) / Config.WIDTH
 	
 	DonutCenter.rotation.x = 0
 	DonutCenter.rotation.y = larger_angle

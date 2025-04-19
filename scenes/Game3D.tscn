@@ -32,6 +32,7 @@ ambient_light_color = Color(1, 1, 1, 1)
 
 [node name="TestDonut" type="MeshInstance3D" parent="."]
 transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 0, 0)
+visible = false
 mesh = SubResource("TorusMesh_s8hr5")
 skeleton = NodePath("../Board")
 
@@ -45,6 +46,7 @@ camera = NodePath("../CameraDonutCenter/CameraDonutSideCenter/Marker/Camera3D")
 transform = Transform3D(0.196528, 0.980498, 0, -0.980498, 0.196528, 0, 0, 0, 1, 0, 0, 0)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="CameraDonutCenter/CameraDonutSideCenter"]
+visible = false
 mesh = SubResource("BoxMesh_masax")
 
 [node name="Marker" type="MeshInstance3D" parent="CameraDonutCenter/CameraDonutSideCenter"]
