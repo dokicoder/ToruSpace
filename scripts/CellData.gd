@@ -17,13 +17,13 @@ var x: int:
 	get(): return _x
 	set(value):
 		_x = value
-		if node: node.update_transform()
+		if node: node.update_mesh()
 
 var y: int:
 	get(): return _y
 	set(value):
 		_y = value
-		if node: node.update_transform()
+		if node: node.update_mesh()
 
 var field: FieldState:
 	get(): return _field

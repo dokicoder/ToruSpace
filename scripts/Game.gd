@@ -52,23 +52,18 @@ func _generate_sprite_board():
 	for cell in board.cells:
 		var node = CellNode.instantiate()
 		node.mesh = node.mesh.duplicate()
-		var material = node.mesh.surface_get_material(0)
-		node.mesh.surface_set_material(0, material.duplicate())
+		#var material = node.mesh.surface_get_material(0)
+		#node.mesh.surface_set_material(0, material.duplicate())
 
 		#node.texture = node.texture.duplicate()
 
-		if(node == null):
-			print("baddo")
-		else:
-			print("goody")
-		
 		# link up visual and data
 		node.data = cell
 		cell.node = node
 		
 		node.rotation.x = PI * 0.5
 		
-		node.update_transform()
+		node.update_mesh()
 		node.update_texture()
 
 		#node.position.x = (cell.x - 0.5 * Config.WIDTH) * 0.5

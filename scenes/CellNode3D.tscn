@@ -3,16 +3,13 @@
 [ext_resource type="Texture2D" uid="uid://gwb807nfvypp" path="res://textures/TSTextureAtlas.png" id="1_drirk"]
 [ext_resource type="Script" path="res://scripts/CellNode3D.gd" id="2_cu8fs"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xban4"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jbtwp"]
 albedo_texture = ExtResource("1_drirk")
 uv1_scale = Vector3(0.125, 0.125, 0.125)
 
-[sub_resource type="PlaneMesh" id="PlaneMesh_qnrlp"]
-material = SubResource("StandardMaterial3D_xban4")
-size = Vector2(1, 1)
-subdivide_width = 1
-subdivide_depth = 4
+[sub_resource type="ArrayMesh" id="ArrayMesh_0q18y"]
 
 [node name="CellNode3d" type="MeshInstance3D"]
-mesh = SubResource("PlaneMesh_qnrlp")
+material_override = SubResource("StandardMaterial3D_jbtwp")
+mesh = SubResource("ArrayMesh_0q18y")
 script = ExtResource("2_cu8fs")
