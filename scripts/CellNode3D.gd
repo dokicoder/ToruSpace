@@ -20,6 +20,25 @@ func get_torus_position(x: float, y: float):
 		sin(inner_angle) * inner_radius
 	)
 
+func get_torus_mormal(x: float, y: float):
+	var inner_angle = PI * 2 * y / Config.HEIGHT
+	var outer_angle = PI * 2 * x / Config.WIDTH
+
+	#  tangent vector with respect to big circle
+	var u = Vector3(
+		-sin(outer_angle),
+		cos(outer_angle),
+		0
+	)
+	# tangent vector with respect to little circle
+	var v = Vector3(
+		cos(outer_angle) * (-sin(inner_angle)),
+		sin(outer_angle) * (-sin(inner_angle)),
+		cos(inner_angle)
+	)
+
+	return u.cross(v).normalized()
+
 func update_mesh():
 	#position.x = cos(outer_angle) * outer_radius
 	#position.y = sin(outer_angle) * outer_radius
@@ -33,20 +52,25 @@ func update_mesh():
 	var normals = PackedVector3Array()
 	var indices = PackedInt32Array()
 
-	verts.append(Vector3(0,0,0))
-	verts.append(Vector3(0,1,0))
-	verts.append(Vector3(1,1,0))
-	verts.append(Vector3(1,0,0))
+	var x1: int = data.x
+	var y1: int = data.y
+	var x2: int = (x1 + 1) % Config.WIDTH
+	var y2: int = (y1 + 1) % Config.HEIGHT
+
+	verts.append(get_torus_position(x1, y1))
+	verts.append(get_torus_position(x1, y2))
+	verts.append(get_torus_position(x2, y2))
+	verts.append(get_torus_position(x2, y1))
 
 	uvs.append(Vector2(0,0))
 	uvs.append(Vector2(0,1))
 	uvs.append(Vector2(1,1))
 	uvs.append(Vector2(1,0))
 
-	normals.append(Vector3.BACK)
-	normals.append(Vector3.BACK)
-	normals.append(Vector3.BACK)
-	normals.append(Vector3.BACK)
+	normals.append(get_torus_mormal(x1, y1))
+	normals.append(get_torus_mormal(x1, y2))
+	normals.append(get_torus_mormal(x2, y2))
+	normals.append(get_torus_mormal(x2, y1))
 
 	indices.append(0)
 	indices.append(1)

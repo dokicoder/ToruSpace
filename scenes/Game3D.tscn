@@ -8,15 +8,20 @@ ambient_light_color = Color(1, 1, 1, 1)
 
 [node name="Game3d" type="Node3D"]
 
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.829038, 0.559193, 0, -0.559193, 0.829038, 0, 0, 0)
+light_color = Color(1, 0, 0, 1)
+light_energy = 12.299
+
 [node name="Board" type="Node3D" parent="." node_paths=PackedStringArray("camera")]
 script = ExtResource("1_cq6ij")
 camera = NodePath("../CameraCenter/Camera3D")
 
 [node name="CameraCenter" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.829037, -0.559193, 0, 0.559193, 0.829037, 0, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 0.829037, 0.559193, 0, -0.559193, 0.829037, 0, 0, 0)
 
 [node name="Camera3D" type="Camera3D" parent="CameraCenter"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 30)
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_fj60c")

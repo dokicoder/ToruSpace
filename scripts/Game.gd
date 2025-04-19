@@ -52,7 +52,7 @@ func _generate_sprite_board():
 	for cell in board.cells:
 		var node = CellNode.instantiate()
 		node.mesh = node.mesh.duplicate()
-		#var material = node.mesh.surface_get_material(0)
+		node.material_override = node.material_override.duplicate()
 		#node.mesh.surface_set_material(0, material.duplicate())
 
 		#node.texture = node.texture.duplicate()
@@ -90,7 +90,7 @@ func _input(event):
 		camera.position.y += MOVE_STEP
 
 func _process(delta: float) -> void:
-	rotation.z += 0.3 * delta
+	rotation.y += 0.3 * delta
 	
 	delta_acc += delta
 	if(delta_acc > STEP):
