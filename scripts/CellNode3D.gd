@@ -8,40 +8,40 @@ var data: CellData
 
 func get_torus_position(x: float, y: float):
 	const s: float = 1
-	const inner_radius = s / (2 * sin(PI / Config.HEIGHT))
-	const outer_radius = s / (2 * sin(PI / Config.WIDTH))
+	const smaller_radius = s / (2 * sin(PI / Config.HEIGHT))
+	const larger_radius = s / (2 * sin(PI / Config.WIDTH))
 
-	var inner_angle = PI * 2 * y / Config.HEIGHT
-	var outer_angle = PI * 2 * x / Config.WIDTH
+	var smaller_angle = PI * 2 * y / Config.HEIGHT
+	var larger_angle = PI * 2 * x / Config.WIDTH
 
 	return Vector3(
-		cos(outer_angle) * (outer_radius + cos(inner_angle) * inner_radius),
-		sin(outer_angle) * (outer_radius + cos(inner_angle) * inner_radius),
-		sin(inner_angle) * inner_radius
+		cos(larger_angle) * (larger_radius + cos(smaller_angle) * smaller_radius),
+		sin(larger_angle) * (larger_radius + cos(smaller_angle) * smaller_radius),
+		sin(smaller_angle) * smaller_radius
 	)
 
 func get_torus_mormal(x: float, y: float):
-	var inner_angle = PI * 2 * y / Config.HEIGHT
-	var outer_angle = PI * 2 * x / Config.WIDTH
+	var smaller_angle = PI * 2 * y / Config.HEIGHT
+	var larger_angle = PI * 2 * x / Config.WIDTH
 
 	#  tangent vector with respect to big circle
 	var u = Vector3(
-		-sin(outer_angle),
-		cos(outer_angle),
+		-sin(larger_angle),
+		cos(larger_angle),
 		0
 	)
 	# tangent vector with respect to little circle
 	var v = Vector3(
-		cos(outer_angle) * (-sin(inner_angle)),
-		sin(outer_angle) * (-sin(inner_angle)),
-		cos(inner_angle)
+		cos(larger_angle) * (-sin(smaller_angle)),
+		sin(larger_angle) * (-sin(smaller_angle)),
+		cos(smaller_angle)
 	)
 
 	return u.cross(v).normalized()
 
 func update_mesh():
-	#position.x = cos(outer_angle) * outer_radius
-	#position.y = sin(outer_angle) * outer_radius
+	#position.x = cos(larger_angle) * larger_radius
+	#position.y = sin(larger_angle) * larger_radius
 
 	var surface_array = []
 	surface_array.resize(Mesh.ARRAY_MAX)
@@ -90,9 +90,7 @@ func update_mesh():
 	
 
 func update_texture():
-	pass
-	var material = get_active_material(0)
-	material.uv1_offset = _field_to_texture_offset(data.field, data.mask)
+	material_override.uv1_offset = _field_to_texture_offset(data.field, data.mask)
 	
 func _on_area_2d_input_event(viewport: Node, event: InputEvent, shape_idx: int) -> void:
 	activated.emit(event, data)

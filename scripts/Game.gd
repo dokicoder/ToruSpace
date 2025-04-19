@@ -1,15 +1,26 @@
 class_name GameManager extends Node3D
 
+@onready var DonutCenter: Node3D = $"../CameraDonutCenter"
+@onready var SideCenter: Node3D = $"../CameraDonutCenter/CameraDonutSideCenter"
+#@onready var Camera: Node3D = $"../CameraDonutCenter/CameraDonutSideCenter/Camera"
+@onready var Marker: Node3D = $"../CameraDonutCenter/CameraDonutSideCenter/Marker"
+@onready var CameraCentral: Node3D = $"../Camera3D"
+
+const GROUND_OFFSET = 7.0
+
 @export var camera: Node
 const MOVE_STEP: float = 200.0
 
-const CellNode: PackedScene = preload("res://scenes/CellNode3D.tscn")
+const CellNodeScene: PackedScene = preload("res://scenes/CellNode3D.tscn")
 
 const STEP = 0.1
 
 var board: BoardData
 
 var delta_acc: float = 0.0
+
+var x = 15
+var y = 56
 
 func _deploy_mines():
 	const mine_ratio: float = 0.09
@@ -46,11 +57,32 @@ func handle_node_click(event: InputEvent, cell: CellData):
 					if event.pressed:
 						board.make_move(cell, BoardData.MoveType.RESET_MASK)
 
+func update_camera_transform(xpos: float, ypos: float):
+	const s: float = 1
+
+	const smaller_radius = s / (2 * sin(PI / Config.HEIGHT))
+	const larger_radius = s / (2 * sin(PI / Config.WIDTH))
+
+	var smaller_angle = PI * 2 * ypos / Config.HEIGHT
+	var larger_angle = PI * 2 * xpos / Config.WIDTH
+	
+	DonutCenter.rotation.x = 0
+	DonutCenter.rotation.y = larger_angle
+	DonutCenter.rotation.z = 0
+	SideCenter.rotation.x = smaller_angle
+	SideCenter.rotation.y = 0
+	SideCenter.rotation.z = 0
+	
+	SideCenter.position.z = -larger_radius
+	Marker.position.z = -smaller_radius - GROUND_OFFSET
+	#SideCenter.rotation.z = larger_angle
+	
+
 func _generate_sprite_board():
 	print("generate")
 
 	for cell in board.cells:
-		var node = CellNode.instantiate()
+		var node = CellNodeScene.instantiate()
 		node.mesh = node.mesh.duplicate()
 		node.material_override = node.material_override.duplicate()
 		#node.mesh.surface_set_material(0, material.duplicate())
@@ -66,36 +98,26 @@ func _generate_sprite_board():
 		node.update_mesh()
 		node.update_texture()
 
-		#node.position.x = (cell.x - 0.5 * Config.WIDTH) * 0.5
-		#node.position.y = (cell.y - 0.5 * Config.HEIGHT) * 0.5
-
-		#node.scale.x = 100
-		#node.scale.y = 100
-		#node.scale.z = 100
-		
-		
-
-		#node.activated.connect(handle_node_click)
-
 		add_child(node)
 	
 func _input(event):
 	if event.is_action_pressed("Left"):
-		camera.position.x -= MOVE_STEP
+		y -= 1
 	if event.is_action_pressed("Right"):
-		camera.position.x += MOVE_STEP
+		y += 1
 	if event.is_action_pressed("Up"):
-		camera.position.y -= MOVE_STEP
+		x -= 1
 	if event.is_action_pressed("Down"):
-		camera.position.y += MOVE_STEP
+		x += 1
+	print(x, " ", y)
+	update_camera_transform(x, y)
 
-func _process(delta: float) -> void:
-	rotation.y += 0.3 * delta
-	
+func _process(delta: float) -> void:	
 	delta_acc += delta
 	if(delta_acc > STEP):
 		delta_acc -= STEP
 		if board.flood_step():
 			# TODO: this is still very inefficient - all mines are checked even	though nothing changed in the vicinity of most of them
 			board.mark_cleared_mines()
+
 	
