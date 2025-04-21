@@ -10,17 +10,20 @@ ambient_light_color = Color(1, 1, 1, 1)
 
 [node name="Board" type="Node3D" parent="." node_paths=PackedStringArray("camera")]
 script = ExtResource("1_cq6ij")
-camera = NodePath("../CameraDonutCenter/CameraDonutSideCenter/CameraContainer/Camera3D")
+camera = NodePath("../BaseTransform/CameraDonutCenter/CameraDonutSideCenter/CameraContainer/Camera3D")
 
-[node name="CameraDonutCenter" type="Node3D" parent="."]
+[node name="BaseTransform" type="Node3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
 
-[node name="CameraDonutSideCenter" type="Node3D" parent="CameraDonutCenter"]
+[node name="CameraDonutCenter" type="Node3D" parent="BaseTransform"]
+
+[node name="CameraDonutSideCenter" type="Node3D" parent="BaseTransform/CameraDonutCenter"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 
-[node name="CameraContainer" type="Node3D" parent="CameraDonutCenter/CameraDonutSideCenter"]
+[node name="CameraContainer" type="Node3D" parent="BaseTransform/CameraDonutCenter/CameraDonutSideCenter"]
 
-[node name="Camera3D" type="Camera3D" parent="CameraDonutCenter/CameraDonutSideCenter/CameraContainer"]
-transform = Transform3D(4.37114e-08, 1, -8.74228e-08, 1, -4.37114e-08, 0, -3.82137e-15, -8.74228e-08, -1, 0, 0, 0)
+[node name="Camera3D" type="Camera3D" parent="BaseTransform/CameraDonutCenter/CameraDonutSideCenter/CameraContainer"]
+transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0, 0, 0)
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_fj60c")

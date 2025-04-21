@@ -1,8 +1,8 @@
 class_name GameManager extends Node3D
 
-@onready var DonutCenter: Node3D = $"../CameraDonutCenter"
-@onready var SideCenter: Node3D = $"../CameraDonutCenter/CameraDonutSideCenter"
-@onready var CameraContainer: Node3D = $"../CameraDonutCenter/CameraDonutSideCenter/CameraContainer" 
+@onready var DonutCenter: Node3D = $"../BaseTransform/CameraDonutCenter"
+@onready var SideCenter: Node3D = $"../BaseTransform/CameraDonutCenter/CameraDonutSideCenter"
+@onready var CameraContainer: Node3D = $"../BaseTransform/CameraDonutCenter/CameraDonutSideCenter/CameraContainer" 
 
 const s: float = 1
 
@@ -36,7 +36,6 @@ var y:
 func update_highlight(highlighted: bool):
 	board.get_cell_at(x, y).highlighted = highlighted
 	
-
 func _deploy_mines():
 	const mine_ratio: float = 0.09
 	var num_mines = int(Config.WIDTH * Config.HEIGHT * mine_ratio)
@@ -84,17 +83,17 @@ func update_camera_transform(xpos: float, ypos: float):
 	# node that stays at center of donut and gets rotated around y ("UP") axis
 	# located "in the center of the donut hole"
 	DonutCenter.rotation.x = 0
-	DonutCenter.rotation.y = larger_angle
+	DonutCenter.rotation.y = -larger_angle
 	DonutCenter.rotation.z = 0
 
 	# node that tracks the center of the "donut dough" and is sweeped through the donut circle
 	SideCenter.rotation.x = smaller_angle
 	SideCenter.rotation.y = 0
 	SideCenter.rotation.z = 0
-	SideCenter.position.z = -larger_radius
+	SideCenter.position.z = larger_radius
 
 	# node that tracks the current position on the donut surface
-	CameraContainer.position.z = -smaller_radius - ground_offset
+	CameraContainer.position.z = smaller_radius + ground_offset
 	
 func _generate_sprite_board():
 	print("generate")
@@ -120,13 +119,13 @@ func _generate_sprite_board():
 	
 func _input(event):
 	if event.is_action_pressed("Left"):
-		y -= 1
-	if event.is_action_pressed("Right"):
 		y += 1
+	if event.is_action_pressed("Right"):
+		y -= 1
 	if event.is_action_pressed("Up"):
-		x -= 1
-	if event.is_action_pressed("Down"):
 		x += 1
+	if event.is_action_pressed("Down"):
+		x -= 1
 	print(x, " ", y)
 	update_camera_transform(x, y)
 
