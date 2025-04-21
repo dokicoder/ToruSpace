@@ -2,11 +2,11 @@ class_name GameManager extends Node3D
 
 @onready var DonutCenter: Node3D = $"../CameraDonutCenter"
 @onready var SideCenter: Node3D = $"../CameraDonutCenter/CameraDonutSideCenter"
-#@onready var Camera: Node3D = $"../CameraDonutCenter/CameraDonutSideCenter/Camera"
-@onready var Marker: Node3D = $"../CameraDonutCenter/CameraDonutSideCenter/Marker"
-@onready var CameraCentral: Node3D = $"../Camera3D"
+@onready var CameraContainer: Node3D = $"../CameraDonutCenter/CameraDonutSideCenter/CameraContainer" 
 
-const GROUND_OFFSET = 7.0
+const s: float = 1
+
+@export var ground_offset: float = 7.0
 
 @export var camera: Node
 const MOVE_STEP: float = 200.0
@@ -19,8 +19,23 @@ var board: BoardData
 
 var delta_acc: float = 0.0
 
-var x = 15
-var y = 56
+var _x: int = 0
+var _y: int = 0
+
+var x:
+	set(value):
+		_x = (value + Config.WIDTH) % Config.WIDTH
+		update_highlight(true)
+	get(): return _x
+var y:
+	set(value):
+		_y = (value + Config.HEIGHT) % Config.HEIGHT
+		update_highlight(true)
+	get(): return _y
+
+func update_highlight(highlighted: bool):
+	board.get_cell_at(x, y).highlighted = highlighted
+	
 
 func _deploy_mines():
 	const mine_ratio: float = 0.09
@@ -60,26 +75,27 @@ func handle_node_click(event: InputEvent, cell: CellData):
 						board.make_move(cell, BoardData.MoveType.RESET_MASK)
 
 func update_camera_transform(xpos: float, ypos: float):
-	const s: float = 1
-
-	const smaller_radius = s / (2 * sin(PI / Config.HEIGHT))
+	const smaller_radius = s / (2 * sin(PI / Config.HEIGHT)) 
 	const larger_radius = s / (2 * sin(PI / Config.WIDTH))
 
-	var smaller_angle = PI * 2 * (ypos + 0.005) / Config.HEIGHT
-	var larger_angle = PI * 2 * (xpos + 0.005) / Config.WIDTH
+	var smaller_angle = PI * 2 * (ypos + 0.5) / Config.HEIGHT
+	var larger_angle = PI * 2 * (xpos + 0.5) / Config.WIDTH
 	
+	# node that stays at center of donut and gets rotated around y ("UP") axis
+	# located "in the center of the donut hole"
 	DonutCenter.rotation.x = 0
 	DonutCenter.rotation.y = larger_angle
 	DonutCenter.rotation.z = 0
+
+	# node that tracks the center of the "donut dough" and is sweeped through the donut circle
 	SideCenter.rotation.x = smaller_angle
 	SideCenter.rotation.y = 0
 	SideCenter.rotation.z = 0
-	
 	SideCenter.position.z = -larger_radius
-	Marker.position.z = -smaller_radius - GROUND_OFFSET
-	#SideCenter.rotation.z = larger_angle
-	
 
+	# node that tracks the current position on the donut surface
+	CameraContainer.position.z = -smaller_radius - ground_offset
+	
 func _generate_sprite_board():
 	print("generate")
 

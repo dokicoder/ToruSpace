@@ -1,28 +1,6 @@
-[gd_scene load_steps=10 format=3 uid="uid://dp3n4xcdkknmm"]
+[gd_scene load_steps=3 format=3 uid="uid://dp3n4xcdkknmm"]
 
 [ext_resource type="Script" path="res://scripts/Game.gd" id="1_cq6ij"]
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nmn71"]
-transparency = 1
-albedo_color = Color(1, 1, 1, 0.0509804)
-
-[sub_resource type="TorusMesh" id="TorusMesh_s8hr5"]
-material = SubResource("StandardMaterial3D_nmn71")
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tvbq6"]
-albedo_color = Color(0.45098, 0.976471, 0.258824, 1)
-
-[sub_resource type="BoxMesh" id="BoxMesh_masax"]
-material = SubResource("StandardMaterial3D_tvbq6")
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0e0lm"]
-albedo_color = Color(0.844385, 0.835046, 0.813651, 1)
-
-[sub_resource type="BoxMesh" id="BoxMesh_vae5n"]
-material = SubResource("StandardMaterial3D_0e0lm")
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x8uoe"]
-albedo_color = Color(1, 0.0509804, 0, 1)
 
 [sub_resource type="Environment" id="Environment_fj60c"]
 ambient_light_source = 2
@@ -30,35 +8,19 @@ ambient_light_color = Color(1, 1, 1, 1)
 
 [node name="Game3d" type="Node3D"]
 
-[node name="TestDonut" type="MeshInstance3D" parent="."]
-transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 0, 0)
-visible = false
-mesh = SubResource("TorusMesh_s8hr5")
-skeleton = NodePath("../Board")
-
 [node name="Board" type="Node3D" parent="." node_paths=PackedStringArray("camera")]
 script = ExtResource("1_cq6ij")
-camera = NodePath("../CameraDonutCenter/CameraDonutSideCenter/Marker/Camera3D")
+camera = NodePath("../CameraDonutCenter/CameraDonutSideCenter/CameraContainer/Camera3D")
 
 [node name="CameraDonutCenter" type="Node3D" parent="."]
 
 [node name="CameraDonutSideCenter" type="Node3D" parent="CameraDonutCenter"]
-transform = Transform3D(0.196528, 0.980498, 0, -0.980498, 0.196528, 0, 0, 0, 1, 0, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="CameraDonutCenter/CameraDonutSideCenter"]
-visible = false
-mesh = SubResource("BoxMesh_masax")
+[node name="CameraContainer" type="Node3D" parent="CameraDonutCenter/CameraDonutSideCenter"]
 
-[node name="Marker" type="MeshInstance3D" parent="CameraDonutCenter/CameraDonutSideCenter"]
-visible = false
-mesh = SubResource("BoxMesh_vae5n")
-surface_material_override/0 = SubResource("StandardMaterial3D_x8uoe")
-
-[node name="Camera3D" type="Camera3D" parent="CameraDonutCenter/CameraDonutSideCenter/Marker"]
+[node name="Camera3D" type="Camera3D" parent="CameraDonutCenter/CameraDonutSideCenter/CameraContainer"]
 transform = Transform3D(4.37114e-08, 1, -8.74228e-08, 1, -4.37114e-08, 0, -3.82137e-15, -8.74228e-08, -1, 0, 0, 0)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="CameraDonutCenter"]
-mesh = SubResource("BoxMesh_vae5n")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_fj60c")

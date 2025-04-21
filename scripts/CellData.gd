@@ -17,25 +17,33 @@ var x: int:
 	get(): return _x
 	set(value):
 		_x = value
-		if node: node.update_mesh()
+		_invalidated_mesh = true
 
 var y: int:
 	get(): return _y
 	set(value):
 		_y = value
-		if node: node.update_mesh()
+		_invalidated_mesh = true
 
 var field: FieldState:
 	get(): return _field
 	set(value):
 		_field = value
-		if node: node.update_texture()
+		_invalidated_texture = true
 
 var mask: MaskState:
 	get(): return _mask
 	set(value):
 		_mask = value
-		if node: node.update_texture()
+		_invalidated_texture = true
+
+var highlighted: bool:
+	set(value):
+		field = FieldState.MINE_EXPLODED
+		_highlighted = value
+		_invalidated_texture = true
+
+	get: return _highlighted
 
 var node: CellNode3D
 var neighbors: Array[CellData] = []
@@ -47,6 +55,12 @@ var _y: int = -1
 
 var _field: FieldState = FieldState.EMPTY
 var _mask: MaskState = MaskState.BLIND
+
+var _invalidated_mesh = false
+var _invalidated_texture = false
+
+var _highlighted = false
+
 
 var closed: bool = false
 

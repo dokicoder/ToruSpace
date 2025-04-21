@@ -57,7 +57,6 @@ func reset():
 		for neighbor_idx in get_neighbor_field_indizes(i):
 			cell.neighbors.append(get_cell_at_idx(neighbor_idx))
 
-
 		#_field.append(board = BoardData.new())
 		#_mask.append(CellData.MaskState.BLIND)
 
