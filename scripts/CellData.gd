@@ -39,10 +39,8 @@ var mask: MaskState:
 
 var highlighted: bool:
 	set(value):
-		field = FieldState.MINE_EXPLODED
 		_highlighted = value
 		_invalidated_texture = true
-
 	get: return _highlighted
 
 var node: CellNode3D
@@ -73,4 +71,5 @@ func reset():
 	closed = false
 	_field = FieldState.EMPTY
 	_mask = MaskState.BLIND
+	_highlighted = false
 	if node: node.update_texture()

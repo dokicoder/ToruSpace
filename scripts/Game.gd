@@ -21,20 +21,27 @@ var delta_acc: float = 0.0
 
 var _x: int = 0
 var _y: int = 0
+var _last_x: int = 0
+var _last_y: int = 0
 
 var x:
 	set(value):
+		_last_x = _x
+		_last_y = _y
 		_x = (value + Config.WIDTH) % Config.WIDTH
-		update_highlight(true)
+		update_highlight()
 	get(): return _x
 var y:
 	set(value):
+		_last_x = _x
+		_last_y = _y
 		_y = (value + Config.HEIGHT) % Config.HEIGHT
-		update_highlight(true)
+		update_highlight()
 	get(): return _y
 
-func update_highlight(highlighted: bool):
-	board.get_cell_at(x, y).highlighted = highlighted
+func update_highlight():
+	board.get_cell_at(_x, _y).highlighted = true
+	board.get_cell_at(_last_x, _last_y).highlighted = false
 	
 func _deploy_mines():
 	const mine_ratio: float = 0.09

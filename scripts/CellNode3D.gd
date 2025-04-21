@@ -90,9 +90,9 @@ func update_mesh():
 	
 
 func update_texture():
-	print("update_texture")
+	print ("update texture", data.highlighted)
 	material_override.uv1_offset = _field_to_texture_offset(data.field, data.mask)
-	material_override.tint_color = Color(0, 1, 0) if(data.highlighted) else Color(1, 1, 1)
+	material_override.albedo_color = Color(0.7, 1, 0.7) if(data.highlighted) else Color(1, 1, 1)
 	
 func _on_area_2d_input_event(viewport: Node, event: InputEvent, shape_idx: int) -> void:
 	activated.emit(event, data)
@@ -120,8 +120,8 @@ static func _field_to_texture_offset(field: CellData.FieldState, mask: CellData.
 
 func _process(delta: float) -> void:
 	if(data._invalidated_mesh):
-		data._invalidated_mesh = false
 		update_mesh()
+		data._invalidated_mesh = false
 	if(data._invalidated_texture):
-		data._invalidated_texture = false
 		update_texture()
+		data._invalidated_texture = false
