@@ -90,7 +90,6 @@ func update_mesh():
 	
 
 func update_texture():
-	print ("update texture", data.highlighted)
 	material_override.uv1_offset = _field_to_texture_offset(data.field, data.mask)
 	material_override.albedo_color = Color(0.7, 1, 0.7) if(data.highlighted) else Color(1, 1, 1)
 	
@@ -98,12 +97,12 @@ func _on_area_2d_input_event(viewport: Node, event: InputEvent, shape_idx: int) 
 	activated.emit(event, data)
 
 static func _field_to_texture_offset(field: CellData.FieldState, mask: CellData.MaskState) -> Vector3:
-	#if mask == CellData.MaskState.BLIND:
-		#return Vector3(6 * BASE_OFFSET, BASE_OFFSET, 0.0)
-	#if mask == CellData.MaskState.MARKED_MINE:
-		#return Vector3(BASE_OFFSET, 3 * BASE_OFFSET, 0.0)
-	#if mask == CellData.MaskState.MARKED_UNSURE:
-		#return Vector3(0, 3 * BASE_OFFSET, 0.0)
+	if mask == CellData.MaskState.BLIND:
+		return Vector3(6 * BASE_OFFSET, BASE_OFFSET, 0.0)
+	if mask == CellData.MaskState.MARKED_MINE:
+		return Vector3(BASE_OFFSET, 3 * BASE_OFFSET, 0.0)
+	if mask == CellData.MaskState.MARKED_UNSURE:
+		return Vector3(0, 3 * BASE_OFFSET, 0.0)
 		
 	if field == CellData.FieldState.MINE_LIVE:
 		return Vector3(BASE_OFFSET, BASE_OFFSET, 0.0)

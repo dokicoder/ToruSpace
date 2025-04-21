@@ -16,6 +16,7 @@ enum MoveType {
 	MARK_UNSURE,
 	MARK_MINE,
 	RESET_MASK,
+	TOGGLE_MASK
 }
 
 @export var width: int:
@@ -256,6 +257,10 @@ func mark_cleared_mines():
 	for mine_cell in minecells_to_delete:
 		_clear_tracker_mine_list.remove_at(_clear_tracker_mine_list.find(mine_cell))
 
+func make_move_at(x: int, y: int, type: MoveType) -> bool:
+	var cell = get_cell_at(x, y)
+	return make_move(cell, type)
+
 func make_move(cell: CellData, type: MoveType) -> bool:
 	print_debug("Make move  -> %s at  %d / %d" % [MoveType.keys()[type], cell.x, cell.y])
 
@@ -265,6 +270,13 @@ func make_move(cell: CellData, type: MoveType) -> bool:
 		cell.mask = CellData.MaskState.MARKED_UNSURE
 	elif type == MoveType.RESET_MASK:
 		cell.mask = CellData.MaskState.BLIND
+	elif type == MoveType.TOGGLE_MASK:
+		if(cell.mask == CellData.MaskState.CLEAR):
+			return true
+		if(cell.mask == CellData.MaskState.MARKED_UNSURE || cell.mask == CellData.MaskState.MARKED_MINE):
+			cell.mask = CellData.MaskState.BLIND
+		else:
+			cell.mask = CellData.MaskState.MARKED_MINE
 	elif type == MoveType.UNMASK_FIELD:
 		return unmask_field(cell)
 	else:

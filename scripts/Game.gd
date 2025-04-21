@@ -40,8 +40,8 @@ var y:
 	get(): return _y
 
 func update_highlight():
-	board.get_cell_at(_x, _y).highlighted = true
 	board.get_cell_at(_last_x, _last_y).highlighted = false
+	board.get_cell_at(_x, _y).highlighted = true
 	
 func _deploy_mines():
 	const mine_ratio: float = 0.09
@@ -52,21 +52,24 @@ func _deploy_mines():
 func _ready() -> void:
 	board = BoardData.new()
 	board.init(Config.WIDTH, Config.HEIGHT)
-	_deploy_mines()
-
-	_generate_sprite_board()
+	
+	_reset()
 	
 	update_camera_transform(x, y)
 
 func _reset():
 	for cell in board.cells:
-		cell.node.queue_free()
-		cell.node = null
+		if(cell.node):
+			cell.node.queue_free()
+			cell.node = null
 
 	board.reset()
 	_deploy_mines()
 
 	_generate_sprite_board()
+
+	x = 0
+	y = 0
 
 func handle_node_click(event: InputEvent, cell: CellData):
 	if event is InputEventMouseButton:
@@ -133,6 +136,12 @@ func _input(event):
 		x += 1
 	if event.is_action_pressed("Down"):
 		x -= 1
+	if event.is_action_pressed("Mark"):
+		board.make_move_at(x, y, BoardData.MoveType.TOGGLE_MASK)
+	if event.is_action_pressed("Unmask"):
+		if not board.make_move_at(x, y, BoardData.MoveType.UNMASK_FIELD):
+			_reset()
+		
 	print(x, " ", y)
 	update_camera_transform(x, y)
 
@@ -143,5 +152,3 @@ func _process(delta: float) -> void:
 		if board.flood_step():
 			# TODO: this is still very inefficient - all mines are checked even	though nothing changed in the vicinity of most of them
 			board.mark_cleared_mines()
-
-	
