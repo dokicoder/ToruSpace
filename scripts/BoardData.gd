@@ -27,19 +27,11 @@ enum MoveType {
 	get:
 		return _height
 
+# set up board with (empty) cells and neighbor information
 func init(w, h):
 	_width = w
 	_height = h
-
-	reset()
-
-func reset():
-	cells.resize(_width * _height)
 	cells.clear()
-	_clear_tracker_mine_list.clear()
-	_flood_list.clear()
-
-	_rng = RandomNumberGenerator.new()
 
 	# create cells
 	for i in range(_width * _height):
@@ -58,8 +50,16 @@ func reset():
 		for neighbor_idx in get_neighbor_field_indizes(i):
 			cell.neighbors.append(get_cell_at_idx(neighbor_idx))
 
-		#_field.append(board = BoardData.new())
-		#_mask.append(CellData.MaskState.BLIND)
+	reset()
+
+func reset():
+	_clear_tracker_mine_list.clear()
+	_flood_list.clear()
+
+	_rng = RandomNumberGenerator.new()
+
+	for cell in cells:
+		cell.reset()
 
 func xy_to_idx(x: int, y: int) -> int:
 	assert(x >= 0 && x < _width && y >= 0 && y < _height)

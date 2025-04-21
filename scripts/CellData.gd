@@ -72,4 +72,6 @@ func reset():
 	_field = FieldState.EMPTY
 	_mask = MaskState.BLIND
 	_highlighted = false
-	if node: node.update_texture()
+	
+	_invalidated_mesh = true
+	_invalidated_texture = true

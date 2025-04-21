@@ -52,21 +52,16 @@ func _deploy_mines():
 func _ready() -> void:
 	board = BoardData.new()
 	board.init(Config.WIDTH, Config.HEIGHT)
+
+	_generate_sprite_board()
 	
 	_reset()
 	
 	update_camera_transform(x, y)
 
 func _reset():
-	for cell in board.cells:
-		if(cell.node):
-			cell.node.queue_free()
-			cell.node = null
-
 	board.reset()
 	_deploy_mines()
-
-	_generate_sprite_board()
 
 	x = 0
 	y = 0
@@ -106,8 +101,6 @@ func update_camera_transform(xpos: float, ypos: float):
 	CameraContainer.position.z = smaller_radius + ground_offset
 	
 func _generate_sprite_board():
-	print("generate")
-
 	for cell in board.cells:
 		var node = CellNodeScene.instantiate()
 		node.mesh = node.mesh.duplicate()
