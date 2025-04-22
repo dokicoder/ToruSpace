@@ -5,6 +5,7 @@
 [sub_resource type="Environment" id="Environment_fj60c"]
 background_mode = 2
 background_color = Color(0.697578, 0.697578, 0.697578, 1)
+background_energy_multiplier = 1.36
 ambient_light_source = 2
 ambient_light_color = Color(1, 1, 1, 1)
 
