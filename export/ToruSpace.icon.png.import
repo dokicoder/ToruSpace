@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://clgd80p1l6fgp"
-path="res://.godot/imported/ToruSpace.icon.png-436ab40889ca9df00a622415160af74b.ctex"
+path="res://.godot/imported/ToruSpace.icon.png-18fe88b459820dcb2dd6a4ea70ee6b93.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Export/ToruSpace.icon.png"
-dest_files=["res://.godot/imported/ToruSpace.icon.png-436ab40889ca9df00a622415160af74b.ctex"]
+source_file="res://docs/ToruSpace.icon.png"
+dest_files=["res://.godot/imported/ToruSpace.icon.png-18fe88b459820dcb2dd6a4ea70ee6b93.ctex"]
 
 [params]
 
