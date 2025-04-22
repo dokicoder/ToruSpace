@@ -6,6 +6,14 @@ class_name GameManager extends Node3D
 
 const s: float = 1
 
+enum InputState {
+	LEFT,
+	RIGHT,
+	UP,
+	DOWN,
+	IDLE
+}
+
 @export var ground_offset: float = 7.0
 
 @export var camera: Node
@@ -15,9 +23,12 @@ const CellNodeScene: PackedScene = preload("res://scenes/CellNode3D.tscn")
 
 const STEP = 0.1
 
+var _input_state: InputState = InputState.IDLE
+
 var board: BoardData
 
 var delta_acc: float = 0.0
+var delta_acc_input: float = 0.0
 
 var _x: int = 0
 var _y: int = 0
@@ -123,12 +134,26 @@ func _generate_sprite_board():
 func _input(event):
 	if event.is_action_pressed("Left"):
 		y += 1
+		_input_state = InputState.LEFT
+		delta_acc_input = 0.0
 	if event.is_action_pressed("Right"):
 		y -= 1
+		_input_state = InputState.RIGHT
+		delta_acc_input = 0.0
 	if event.is_action_pressed("Up"):
 		x += 1
+		_input_state = InputState.UP
+		delta_acc_input = 0.0
 	if event.is_action_pressed("Down"):
 		x -= 1
+		_input_state = InputState.UP
+		delta_acc_input = 0.0
+	if( event.is_action_released("Up")
+		or event.is_action_released("Down") 
+		or event.is_action_released("Left") 
+		or event.is_action_released("Right") ):
+		_input_state = InputState.IDLE
+
 	if event.is_action_pressed("Mark"):
 		board.make_move_at(x, y, BoardData.MoveType.TOGGLE_MASK)
 	if event.is_action_pressed("Unmask"):
@@ -136,12 +161,25 @@ func _input(event):
 			_reset()
 		
 	print(x, " ", y)
-	update_camera_transform(x, y)
 
-func _process(delta: float) -> void:	
+func _process(delta: float) -> void:
+	delta_acc_input += delta
+	if(delta_acc_input > 0.5):
+		delta_acc_input -= 0.1
+		if _input_state == InputState.LEFT:
+			y += 1
+		elif _input_state == InputState.RIGHT:
+			y -= 1
+		elif _input_state == InputState.UP:
+			x += 1
+		elif _input_state == InputState.DOWN:
+			x -= 1
+
 	delta_acc += delta
 	if(delta_acc > STEP):
 		delta_acc -= STEP
 		if board.flood_step():
 			# TODO: this is still very inefficient - all mines are checked even	though nothing changed in the vicinity of most of them
 			board.mark_cleared_mines()
+
+	update_camera_transform(x, y)

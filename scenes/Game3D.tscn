@@ -3,6 +3,8 @@
 [ext_resource type="Script" path="res://scripts/Game.gd" id="1_cq6ij"]
 
 [sub_resource type="Environment" id="Environment_fj60c"]
+background_mode = 2
+background_color = Color(0.697578, 0.697578, 0.697578, 1)
 ambient_light_source = 2
 ambient_light_color = Color(1, 1, 1, 1)
 
@@ -10,6 +12,7 @@ ambient_light_color = Color(1, 1, 1, 1)
 
 [node name="Board" type="Node3D" parent="." node_paths=PackedStringArray("camera")]
 script = ExtResource("1_cq6ij")
+ground_offset = 12.0
 camera = NodePath("../BaseTransform/CameraDonutCenter/CameraDonutSideCenter/CameraContainer/Camera3D")
 
 [node name="BaseTransform" type="Node3D" parent="."]
@@ -18,7 +21,6 @@ transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 
 [node name="CameraDonutCenter" type="Node3D" parent="BaseTransform"]
 
 [node name="CameraDonutSideCenter" type="Node3D" parent="BaseTransform/CameraDonutCenter"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 
 [node name="CameraContainer" type="Node3D" parent="BaseTransform/CameraDonutCenter/CameraDonutSideCenter"]
 
