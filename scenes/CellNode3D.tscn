@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://beywv3esliy6w"]
 
 [ext_resource type="Texture2D" uid="uid://gwb807nfvypp" path="res://textures/TSTextureAtlas.png" id="1_drirk"]
-[ext_resource type="Script" path="res://scripts/CellNode3D.gd" id="2_cu8fs"]
+[ext_resource type="Script" uid="uid://cp1ouwmohl5wa" path="res://scripts/CellNode3D.gd" id="2_cu8fs"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jbtwp"]
 albedo_texture = ExtResource("1_drirk")

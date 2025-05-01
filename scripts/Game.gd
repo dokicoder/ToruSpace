@@ -146,7 +146,7 @@ func _input(event):
 		delta_acc_input = 0.0
 	if event.is_action_pressed("Down"):
 		x -= 1
-		_input_state = InputState.UP
+		_input_state = InputState.DOWN
 		delta_acc_input = 0.0
 	if( event.is_action_released("Up")
 		or event.is_action_released("Down") 

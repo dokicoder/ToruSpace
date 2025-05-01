@@ -1,6 +1,6 @@
-[gd_scene load_steps=4 format=3 uid="uid://dp3n4xcdkknmm"]
+[gd_scene load_steps=3 format=3 uid="uid://dp3n4xcdkknmm"]
 
-[ext_resource type="Script" path="res://scripts/Game.gd" id="1_cq6ij"]
+[ext_resource type="Script" uid="uid://delws4b5shv8k" path="res://scripts/Game.gd" id="1_cq6ij"]
 
 [sub_resource type="Environment" id="Environment_fj60c"]
 background_mode = 2
@@ -8,8 +8,6 @@ background_color = Color(0.697578, 0.697578, 0.697578, 1)
 background_energy_multiplier = 1.36
 ambient_light_source = 2
 ambient_light_color = Color(1, 1, 1, 1)
-
-[sub_resource type="BoxMesh" id="BoxMesh_1t5od"]
 
 [node name="Game3d" type="Node3D"]
 
@@ -32,6 +30,3 @@ transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0, 0, 
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_fj60c")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-mesh = SubResource("BoxMesh_1t5od")
